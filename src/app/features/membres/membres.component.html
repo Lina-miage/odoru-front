@@ -1,0 +1,23 @@
+<div style="padding: 2rem;">
+  <h2>Liste des membres</h2>
+  <p-table [value]="membres" [paginator]="true" [rows]="10">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Nom</th>
+        <th>Prénom</th>
+        <th>Email</th>
+        <th>Niveau</th>
+        <th>Rôle</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-membre>
+      <tr>
+        <td>{{ membre.nom }}</td>
+        <td>{{ membre.prenom }}</td>
+        <td>{{ membre.courriel }}</td>
+        <td>{{ membre.niveauExpertise }}</td>
+        <td>{{ membre.role }}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
