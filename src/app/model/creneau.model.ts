@@ -1,6 +1,6 @@
 export interface Creneau {
   id?: number;
-  jourSemaine: string;
-  heureDebut: string;
-  date: string;
+  jourSemaine?: string;
+  heureDebut?: string;
+  date?: string;
 }
