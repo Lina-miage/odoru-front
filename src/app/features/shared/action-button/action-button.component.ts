@@ -1,0 +1,25 @@
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ButtonModule } from 'primeng/button';
+import { TooltipModule } from 'primeng/tooltip';
+
+@Component({
+  selector: 'app-action-button',
+  standalone: true,
+  imports: [ButtonModule, TooltipModule],
+  template: `
+    <p-button
+      [icon]="icon"
+      [rounded]="true"
+      [style]="{ 'background-color': couleur, border: 'none' }"
+      [pTooltip]="tooltip"
+      tooltipPosition="top"
+      (onClick)="clicked.emit()"
+    />
+  `,
+})
+export class ActionButtonComponent {
+  @Input() icon: string = '';
+  @Input() couleur: string = '#217b8a';
+  @Input() tooltip: string = '';
+  @Output() clicked = new EventEmitter<void>();
+}

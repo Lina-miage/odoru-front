@@ -110,22 +110,19 @@
           </p-floatlabel>
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 1rem">
-          <p-button
-            label="Annuler"
-            [style]="{ 'background-color': '#90949E', border: 'none' }"
-            (onClick)="showForm.set(false)"
-          />
-          <p-button
-            label="Inscrire"
-            [style]="{ 'background-color': '#217b8a', border: 'none' }"
-            (onClick)="inscrire()"
+          <app-form-buttons
+            labelConfirmer="Inscrire"
+            (annuler)="showForm.set(false)"
+            (confirmer)="inscrire()"
           />
         </div>
       </div>
     </p-card>
   }
 
-  <h2>Membres d'Odoru</h2>
+  <div style="margin-top: 4rem">
+    <app-page-header titre="Membres d'Odoru" />
+  </div>
   <p-table [value]="membres" [paginator]="true" [rows]="10" dataKey="identifiant">
     <ng-template pTemplate="header">
       <tr>
@@ -153,30 +150,24 @@
         <td>{{ membre.role }}</td>
         <td style="display: flex; gap: 0.5rem">
           @if (membre.role === 'MEMBRE') {
-            <p-button
+            <app-action-button
               icon="pi pi-user-plus"
-              [rounded]="true"
-              [style]="{ 'background-color': '#6495ED', border: 'none' }"
-              pTooltip="Désigner enseignant"
-              tooltipPosition="top"
-              (onClick)="confirmerDesignation(membre)"
+              couleur="#6495ED"
+              tooltip="Désigner enseignant"
+              (clicked)="confirmerDesignation(membre)"
             />
           }
-          <p-button
+          <app-action-button
             icon="pi pi-pencil"
-            [rounded]="true"
-            [style]="{ 'background-color': '#90949E', border: 'none' }"
-            pTooltip="Mettre à jour le niveau"
-            tooltipPosition="top"
-            (onClick)="ouvrirDialogNiveau(membre)"
+            couleur="#90949E"
+            tooltip="Mettre à jour le niveau"
+            (clicked)="ouvrirDialogNiveau(membre)"
           />
-          <p-button
+          <app-action-button
             icon="pi pi-trash"
-            [rounded]="true"
-            [style]="{ 'background-color': '#8F4A3F', border: 'none' }"
-            pTooltip="Supprimer"
-            tooltipPosition="top"
-            (onClick)="confirmerSuppression(membre)"
+            couleur="#8F4A3F"
+            tooltip="Supprimer"
+            (clicked)="confirmerSuppression(membre)"
           />
         </td>
       </tr>

@@ -227,32 +227,17 @@
           </p-floatlabel>
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 1rem">
-          <p-button
-            label="Annuler"
-            [style]="{ 'background-color': '#90949E', border: 'none' }"
-            (onClick)="showForm.set(false)"
-          />
-          <p-button
-            label="Créer"
-            [style]="{ 'background-color': '#217b8a', border: 'none' }"
-            (onClick)="creerCours()"
+          <app-form-buttons
+            labelConfirmer="Créer"
+            (annuler)="showForm.set(false)"
+            (confirmer)="creerCours()"
           />
         </div>
       </div>
     </p-card>
   }
-
-  <div
-    style="
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-      margin-top: 4rem;
-    "
-  >
-    <h2 style="margin: 0">Cours planifiés</h2>
-    <div style="display: flex; gap: 1rem; align-items: center">
+  <div style="margin-top: 4rem">
+    <app-page-header titre="Cours planifiés">
       <p-select
         [options]="niveaux"
         [ngModel]="filtreNiveau()"
@@ -273,7 +258,7 @@
         [showClear]="true"
         style="width: 200px"
       />
-    </div>
+    </app-page-header>
   </div>
   <p-table [value]="coursFiltres()" [paginator]="true" [rows]="10" dataKey="identifiant">
     <ng-template pTemplate="header">
@@ -296,7 +281,7 @@
         <td>{{ unCours.duree }} min</td>
         <td>{{ unCours.enseignant?.prenom }} {{ unCours.enseignant?.nom }}</td>
         <td>
-          {{ unCours.creneau?.jourSemaine }} {{ unCours.creneau?.date }}
+          {{ unCours.creneau?.jourSemaine }} {{ unCours.creneau?.date | dateFormat }}
           <strong>
             {{ unCours.creneau?.heureDebut?.slice(0, 5) }} -
             {{ calculerHeureFin(unCours.creneau?.heureDebut!, unCours.duree) }}
@@ -304,21 +289,17 @@
         </td>
         <td>{{ unCours.inscrits?.length ?? 0 }}</td>
         <td style="display: flex; gap: 0.5rem">
-          <p-button
+          <app-action-button
             icon="pi pi-users"
-            [rounded]="true"
-            [style]="{ 'background-color': '#6495ED', border: 'none' }"
-            pTooltip="Voir les inscrits"
-            tooltipPosition="top"
-            (onClick)="voirInscrits(unCours)"
+            couleur="#6495ED"
+            tooltip="Voir les inscrits"
+            (clicked)="voirInscrits(unCours)"
           />
-          <p-button
+          <app-action-button
             icon="pi pi-trash"
-            [rounded]="true"
-            [style]="{ 'background-color': '#8F4A3F', border: 'none' }"
-            pTooltip="Supprimer"
-            tooltipPosition="top"
-            (onClick)="confirmerSuppression(unCours)"
+            couleur="#8F4A3F"
+            tooltip="Supprimer"
+            (clicked)="confirmerSuppression(unCours)"
           />
         </td>
       </tr>

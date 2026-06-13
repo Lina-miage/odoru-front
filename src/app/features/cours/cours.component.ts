@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CoursService } from '../../services/cours.service';
 import { UtilisateurService } from '../../services/utilisateur.service';
+import { NotificationService } from '../../services/notification.service';
 import { Cours } from '../../model/cours.model';
 import { Creneau } from '../../model/creneau.model';
 import { Utilisateur } from '../../model/utilisateur.model';
@@ -19,6 +20,10 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { DialogModule } from 'primeng/dialog';
 import { DatePicker } from 'primeng/datepicker';
+import { PageHeaderComponent } from '../shared/page-header/page-header.component';
+import { DateFormatPipe } from '../../pipes/date-format.pipe';
+import { FormButtonsComponent } from '../shared/form-buttons/form-buttons.component';
+import { ActionButtonComponent } from '../shared/action-button/action-button.component';
 
 @Component({
   selector: 'app-cours',
@@ -38,6 +43,10 @@ import { DatePicker } from 'primeng/datepicker';
     ToastModule,
     DialogModule,
     DatePicker,
+    PageHeaderComponent,
+    DateFormatPipe,
+    FormButtonsComponent,
+    ActionButtonComponent,
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './cours.component.html',
@@ -80,7 +89,7 @@ export class CoursComponent implements OnInit {
     private coursService: CoursService,
     private utilisateurService: UtilisateurService,
     private confirmationService: ConfirmationService,
-    private messageService: MessageService,
+    private notificationService: NotificationService,
   ) {}
 
   ngOnInit() {
@@ -96,46 +105,27 @@ export class CoursComponent implements OnInit {
   chargerCours() {
     this.coursService.getAll().subscribe({
       next: (data) => this.cours.set(data),
-      error: () =>
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de charger les cours',
-        }),
+      error: (err) => this.notificationService.error(err),
     });
   }
 
   chargerCreneaux() {
     this.coursService.getAllCreneaux().subscribe({
       next: (data) => (this.creneaux = data),
-      error: () =>
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de charger les créneaux',
-        }),
+      error: (err) => this.notificationService.error(err),
     });
   }
 
   chargerEnseignants() {
     this.utilisateurService.getAll().subscribe({
       next: (data) => (this.enseignants = data.filter((u) => u.role === 'ENSEIGNANT')),
-      error: () =>
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: 'Impossible de charger les enseignants',
-        }),
+      error: (err) => this.notificationService.error(err),
     });
   }
 
   creerCreneau() {
     if (!this.nouveauCreneau.date || !this.nouveauCreneau.heureDebut) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Attention',
-        detail: 'Veuillez remplir tous les champs',
-      });
+      this.notificationService.warn('Veuillez remplir tous les champs');
       return;
     }
 
@@ -160,29 +150,15 @@ export class CoursComponent implements OnInit {
         this.chargerCreneaux();
         this.showCreneauDialog.set(false);
         this.nouveauCreneau = { jourSemaine: '', heureDebut: null, date: null };
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Succès',
-          detail: 'Créneau créé avec succès',
-        });
+        this.notificationService.success('Créneau créé avec succès');
       },
-      error: (err) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: err.error.message,
-        });
-      },
+      error: (err) => this.notificationService.error(err),
     });
   }
 
   creerCours() {
-    if (!this.enseignantId || !this.creneauSelectionne) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Attention',
-        detail: 'Veuillez sélectionner un enseignant et un créneau',
-      });
+    if (!this.enseignantId || !this.creneauSelectionne || !this.nouveauCours.niveauCible) {
+      this.notificationService.warn('Veuillez remplir tous les champs obligatoires');
       return;
     }
 
@@ -195,35 +171,16 @@ export class CoursComponent implements OnInit {
         this.nouveauCours = {
           titre: '',
           lieu: '',
-          niveauCible: 1,
-          duree: 60,
+          niveauCible: undefined,
+          duree: undefined,
           creneau: { id: undefined },
         };
         this.enseignantId = null;
         this.creneauSelectionne = null;
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Succès',
-          detail: 'Cours créé avec succès',
-        });
+        this.notificationService.success('Cours créé avec succès');
       },
-      error: (err) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: err.error.message,
-        });
-      },
+      error: (err) => this.notificationService.error(err),
     });
-
-    if (!this.enseignantId || !this.creneauSelectionne || !this.nouveauCours.niveauCible) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Attention',
-        detail: 'Veuillez remplir tous les champs obligatoires',
-      });
-      return;
-    }
   }
 
   confirmerSuppression(cours: Cours) {
@@ -235,19 +192,9 @@ export class CoursComponent implements OnInit {
         this.coursService.supprimer(cours.identifiant!).subscribe({
           next: () => {
             this.chargerCours();
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Succès',
-              detail: 'Cours supprimé avec succès',
-            });
+            this.notificationService.success('Cours supprimé avec succès');
           },
-          error: (err) => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Erreur',
-              detail: err.error.message,
-            });
-          },
+          error: (err) => this.notificationService.error(err),
         });
       },
     });
@@ -277,7 +224,6 @@ export class CoursComponent implements OnInit {
 
   get enseignantsDisponibles() {
     if (!this.nouveauCours.niveauCible) return this.enseignants;
-
     return this.enseignants.filter(
       (e) => e.profilEnseignant && e.profilEnseignant.niveauApte >= this.nouveauCours.niveauCible!,
     );
@@ -289,12 +235,10 @@ export class CoursComponent implements OnInit {
 
   calculerHeureFin(heureDebut: string, duree: number): string {
     if (!heureDebut || !duree) return '';
-
-    const [heures, minutes, secondes] = heureDebut.split(':').map(Number);
+    const [heures, minutes] = heureDebut.split(':').map(Number);
     const totalMinutes = heures * 60 + minutes + duree;
     const heureFin = Math.floor(totalMinutes / 60) % 24;
     const minutesFin = totalMinutes % 60;
-
     return `${String(heureFin).padStart(2, '0')}:${String(minutesFin).padStart(2, '0')}`;
   }
 
