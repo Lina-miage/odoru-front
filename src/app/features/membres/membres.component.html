@@ -1,22 +1,184 @@
-<div style="padding: 2rem;">
-  <h2>Liste des membres</h2>
-  <p-table [value]="membres" [paginator]="true" [rows]="10">
+<div style="padding: 2rem">
+  <p-toast />
+  <p-confirmdialog />
+
+  <p-dialog
+    header="Mettre à jour le niveau"
+    [visible]="showNiveauDialog()"
+    (visibleChange)="showNiveauDialog.set($event)"
+    [modal]="true"
+    [style]="{ width: '400px' }"
+  >
+    <div style="display: flex; flex-direction: column; gap: 1rem; padding: 1rem">
+      <p>
+        Sélectionner le nouveau niveau pour
+        <strong>{{ membreSelectionne()?.prenom }} {{ membreSelectionne()?.nom }}</strong>
+      </p>
+      <p-select
+        [options]="niveaux"
+        [(ngModel)]="niveauSelectionne"
+        optionLabel="label"
+        optionValue="value"
+        style="width: 100%"
+      />
+      <p-button label="Confirmer" (onClick)="confirmerNiveau()" />
+    </div>
+  </p-dialog>
+
+  @if (!showForm()) {
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem">
+      <p-button
+        label="Inscrire un membre"
+        [style]="{ 'background-color': '#217b8a', border: 'none' }"
+        (onClick)="showForm.set(true)"
+      />
+    </div>
+  }
+
+  @if (showForm()) {
+    <p-card header="Inscrire un nouveau membre" styleClass="margin-bottom: 2rem; display: block;">
+      <div style="display: flex; flex-direction: column; gap: 1.5rem">
+        <div style="display: flex; gap: 1.5rem">
+          <p-floatlabel style="flex: 1">
+            <input pInputText id="nom" [(ngModel)]="nouveauMembre.nom" style="width: 100%" />
+            <label for="nom">Nom</label>
+          </p-floatlabel>
+          <p-floatlabel style="flex: 1">
+            <input pInputText id="prenom" [(ngModel)]="nouveauMembre.prenom" style="width: 100%" />
+            <label for="prenom">Prénom</label>
+          </p-floatlabel>
+        </div>
+        <div style="display: flex; gap: 1.5rem">
+          <p-floatlabel style="flex: 1">
+            <input
+              pInputText
+              id="courriel"
+              [(ngModel)]="nouveauMembre.courriel"
+              style="width: 100%"
+            />
+            <label for="courriel">Email</label>
+          </p-floatlabel>
+          <p-floatlabel style="flex: 1">
+            <input
+              pInputText
+              id="nomUtilisateur"
+              [(ngModel)]="nouveauMembre.nomUtilisateur"
+              style="width: 100%"
+            />
+            <label for="nomUtilisateur">Nom d'utilisateur</label>
+          </p-floatlabel>
+        </div>
+        <div style="display: flex; gap: 1.5rem">
+          <p-floatlabel style="flex: 1">
+            <input
+              pInputText
+              id="ville"
+              [(ngModel)]="nouveauMembre.adresse!.ville"
+              style="width: 100%"
+            />
+            <label for="ville">Ville</label>
+          </p-floatlabel>
+          <p-floatlabel style="flex: 1">
+            <input
+              pInputText
+              id="pays"
+              [(ngModel)]="nouveauMembre.adresse!.pays"
+              style="width: 100%"
+            />
+            <label for="pays">Pays</label>
+          </p-floatlabel>
+        </div>
+        <div style="display: flex; gap: 1.5rem">
+          <p-floatlabel style="flex: 1">
+            <p-password
+              id="motDePasse"
+              [(ngModel)]="nouveauMembre.motDePasse"
+              [feedback]="false"
+              style="width: 100%"
+            />
+            <label for="motDePasse">Mot de passe</label>
+          </p-floatlabel>
+          <p-floatlabel style="flex: 1">
+            <p-inputnumber
+              id="niveau"
+              [(ngModel)]="nouveauMembre.niveauExpertise"
+              [min]="1"
+              [max]="5"
+              style="width: 100%"
+            />
+            <label for="niveau">Niveau (1-5)</label>
+          </p-floatlabel>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 1rem">
+          <p-button
+            label="Annuler"
+            [style]="{ 'background-color': '#90949E', border: 'none' }"
+            (onClick)="showForm.set(false)"
+          />
+          <p-button
+            label="Inscrire"
+            [style]="{ 'background-color': '#217b8a', border: 'none' }"
+            (onClick)="inscrire()"
+          />
+        </div>
+      </div>
+    </p-card>
+  }
+
+  <h2>Membres d'Odoru</h2>
+  <p-table [value]="membres" [paginator]="true" [rows]="10" dataKey="identifiant">
     <ng-template pTemplate="header">
       <tr>
         <th>Nom</th>
         <th>Prénom</th>
+        <th>Nom d'utilisateur</th>
         <th>Email</th>
+        <th>Résidence</th>
         <th>Niveau</th>
         <th>Rôle</th>
+        <th>Actions</th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-membre>
       <tr>
         <td>{{ membre.nom }}</td>
         <td>{{ membre.prenom }}</td>
+        <td>{{ membre.nomUtilisateur }}</td>
         <td>{{ membre.courriel }}</td>
+        <td>
+          {{ membre.adresse?.ville }}{{ membre.adresse?.ville && membre.adresse?.pays ? ', ' : ''
+          }}{{ membre.adresse?.pays }}
+        </td>
         <td>{{ membre.niveauExpertise }}</td>
         <td>{{ membre.role }}</td>
+        <td style="display: flex; gap: 0.5rem">
+          @if (membre.role === 'MEMBRE') {
+            <p-button
+              icon="pi pi-user-plus"
+              [rounded]="true"
+              [style]="{ 'background-color': '#6495ED', border: 'none' }"
+              pTooltip="Désigner enseignant"
+              tooltipPosition="top"
+              (onClick)="confirmerDesignation(membre)"
+            />
+          }
+          <p-button
+            icon="pi pi-pencil"
+            [rounded]="true"
+            [style]="{ 'background-color': '#90949E', border: 'none' }"
+            pTooltip="Mettre à jour le niveau"
+            tooltipPosition="top"
+            (onClick)="ouvrirDialogNiveau(membre)"
+          />
+          <p-button
+            icon="pi pi-trash"
+            [rounded]="true"
+            [style]="{ 'background-color': '#8F4A3F', border: 'none' }"
+            pTooltip="Supprimer"
+            tooltipPosition="top"
+            (onClick)="confirmerSuppression(membre)"
+          />
+        </td>
       </tr>
     </ng-template>
   </p-table>
