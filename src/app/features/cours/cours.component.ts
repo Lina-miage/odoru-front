@@ -43,7 +43,7 @@ import { DatePicker } from 'primeng/datepicker';
   templateUrl: './cours.component.html',
 })
 export class CoursComponent implements OnInit {
-  cours: Cours[] = [];
+  cours = signal<Cours[]>([]);
   creneaux: Creneau[] = [];
   enseignants: Utilisateur[] = [];
   enseignantId: number | null = null;
@@ -94,20 +94,38 @@ export class CoursComponent implements OnInit {
   }
 
   chargerCours() {
-    this.coursService.getAll().subscribe((data) => {
-      this.cours = data;
+    this.coursService.getAll().subscribe({
+      next: (data) => this.cours.set(data),
+      error: () =>
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Impossible de charger les cours',
+        }),
     });
   }
 
   chargerCreneaux() {
-    this.coursService.getAllCreneaux().subscribe((data) => {
-      this.creneaux = data;
+    this.coursService.getAllCreneaux().subscribe({
+      next: (data) => (this.creneaux = data),
+      error: () =>
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Impossible de charger les créneaux',
+        }),
     });
   }
 
   chargerEnseignants() {
-    this.utilisateurService.getAll().subscribe((data) => {
-      this.enseignants = data.filter((u) => u.role === 'ENSEIGNANT');
+    this.utilisateurService.getAll().subscribe({
+      next: (data) => (this.enseignants = data.filter((u) => u.role === 'ENSEIGNANT')),
+      error: () =>
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: 'Impossible de charger les enseignants',
+        }),
     });
   }
 
@@ -236,7 +254,7 @@ export class CoursComponent implements OnInit {
   }
 
   getCoursParCreneau(creneauId: number): string {
-    const coursAssocie = this.cours.find((c) => c.creneau?.id === creneauId);
+    const coursAssocie = this.cours().find((c) => c.creneau?.id === creneauId);
     return coursAssocie ? coursAssocie.titre : 'Aucun cours';
   }
 
@@ -281,7 +299,7 @@ export class CoursComponent implements OnInit {
   }
 
   coursFiltres = computed(() => {
-    return this.cours.filter((c) => {
+    return this.cours().filter((c) => {
       const matchNiveau = this.filtreNiveau() ? c.niveauCible === this.filtreNiveau() : true;
       const matchEnseignant = this.filtreEnseignantId()
         ? c.enseignant?.identifiant === this.filtreEnseignantId()

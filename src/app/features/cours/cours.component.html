@@ -242,36 +242,38 @@
     </p-card>
   }
 
-  <h2>Cours planifiés</h2>
   <div
     style="
       display: flex;
-      gap: 1rem;
-      margin-bottom: 1rem;
+      justify-content: space-between;
       align-items: center;
-      justify-content: flex-end;
+      margin-bottom: 1rem;
+      margin-top: 4rem;
     "
   >
-    <p-select
-      [options]="niveaux"
-      [ngModel]="filtreNiveau()"
-      (ngModelChange)="filtreNiveau.set($event)"
-      optionLabel="label"
-      optionValue="value"
-      placeholder="Filtrer par niveau"
-      [showClear]="true"
-      style="width: 200px"
-    />
-    <p-select
-      [options]="enseignants"
-      [ngModel]="filtreEnseignantId()"
-      (ngModelChange)="filtreEnseignantId.set($event)"
-      optionLabel="prenom"
-      optionValue="identifiant"
-      placeholder="Filtrer par enseignant"
-      [showClear]="true"
-      style="width: 200px"
-    />
+    <h2 style="margin: 0">Cours planifiés</h2>
+    <div style="display: flex; gap: 1rem; align-items: center">
+      <p-select
+        [options]="niveaux"
+        [ngModel]="filtreNiveau()"
+        (ngModelChange)="filtreNiveau.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Filtrer par niveau"
+        [showClear]="true"
+        style="width: 200px"
+      />
+      <p-select
+        [options]="enseignants"
+        [ngModel]="filtreEnseignantId()"
+        (ngModelChange)="filtreEnseignantId.set($event)"
+        optionLabel="prenom"
+        optionValue="identifiant"
+        placeholder="Filtrer par enseignant"
+        [showClear]="true"
+        style="width: 200px"
+      />
+    </div>
   </div>
   <p-table [value]="coursFiltres()" [paginator]="true" [rows]="10" dataKey="identifiant">
     <ng-template pTemplate="header">
@@ -286,19 +288,21 @@
         <th>Actions</th>
       </tr>
     </ng-template>
-    <ng-template pTemplate="body" let-cours>
+    <ng-template pTemplate="body" let-unCours>
       <tr>
-        <td>{{ cours.titre }}</td>
-        <td>{{ cours.lieu }}</td>
-        <td>{{ cours.niveauCible }}</td>
-        <td>{{ cours.duree }} min</td>
-        <td>{{ cours.enseignant?.prenom }} {{ cours.enseignant?.nom }}</td>
+        <td>{{ unCours.titre }}</td>
+        <td>{{ unCours.lieu }}</td>
+        <td>{{ unCours.niveauCible }}</td>
+        <td>{{ unCours.duree }} min</td>
+        <td>{{ unCours.enseignant?.prenom }} {{ unCours.enseignant?.nom }}</td>
         <td>
-          {{ cours.creneau?.jourSemaine }} {{ cours.creneau?.date }}
-          {{ cours.creneau?.heureDebut?.slice(0, 5) }} -
-          {{ calculerHeureFin(cours.creneau?.heureDebut!, cours.duree) }}
+          {{ unCours.creneau?.jourSemaine }} {{ unCours.creneau?.date }}
+          <strong>
+            {{ unCours.creneau?.heureDebut?.slice(0, 5) }} -
+            {{ calculerHeureFin(unCours.creneau?.heureDebut!, unCours.duree) }}
+          </strong>
         </td>
-        <td>{{ cours.inscrits?.length ?? 0 }}</td>
+        <td>{{ unCours.inscrits?.length ?? 0 }}</td>
         <td style="display: flex; gap: 0.5rem">
           <p-button
             icon="pi pi-users"
@@ -306,7 +310,7 @@
             [style]="{ 'background-color': '#6495ED', border: 'none' }"
             pTooltip="Voir les inscrits"
             tooltipPosition="top"
-            (onClick)="voirInscrits(cours)"
+            (onClick)="voirInscrits(unCours)"
           />
           <p-button
             icon="pi pi-trash"
@@ -314,7 +318,7 @@
             [style]="{ 'background-color': '#8F4A3F', border: 'none' }"
             pTooltip="Supprimer"
             tooltipPosition="top"
-            (onClick)="confirmerSuppression(cours)"
+            (onClick)="confirmerSuppression(unCours)"
           />
         </td>
       </tr>
