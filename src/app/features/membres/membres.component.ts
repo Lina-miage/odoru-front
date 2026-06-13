@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UtilisateurService } from '../../services/utilisateur.service';
+import { NotificationService } from '../../services/notification.service';
 import { Utilisateur } from '../../model/utilisateur.model';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -16,6 +17,9 @@ import { DialogModule } from 'primeng/dialog';
 import { Select } from 'primeng/select';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { PageHeaderComponent } from '../shared/page-header/page-header.component';
+import { FormButtonsComponent } from '../shared/form-buttons/form-buttons.component';
+import { ActionButtonComponent } from '../shared/action-button/action-button.component';
 
 @Component({
   selector: 'app-membres',
@@ -35,6 +39,9 @@ import { ToastModule } from 'primeng/toast';
     DialogModule,
     Select,
     ToastModule,
+    PageHeaderComponent,
+    FormButtonsComponent,
+    ActionButtonComponent,
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './membres.component.html',
@@ -67,7 +74,7 @@ export class MembreComponent implements OnInit {
   constructor(
     private utilisateurService: UtilisateurService,
     private confirmationService: ConfirmationService,
-    private messageService: MessageService,
+    private notificationService: NotificationService,
   ) {}
 
   ngOnInit() {
@@ -75,8 +82,9 @@ export class MembreComponent implements OnInit {
   }
 
   chargerMembres() {
-    this.utilisateurService.getAll().subscribe((data) => {
-      this.membres = data;
+    this.utilisateurService.getAll().subscribe({
+      next: (data) => (this.membres = data),
+      error: (err) => this.notificationService.error(err),
     });
   }
 
@@ -94,19 +102,9 @@ export class MembreComponent implements OnInit {
           niveauExpertise: 1,
           adresse: { ville: '', pays: '' },
         };
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Succès',
-          detail: 'Membre inscrit avec succès',
-        });
+        this.notificationService.success('Membre inscrit avec succès');
       },
-      error: (err) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erreur',
-          detail: err.error.message,
-        });
-      },
+      error: (err) => this.notificationService.error(err),
     });
   }
 
@@ -119,19 +117,11 @@ export class MembreComponent implements OnInit {
         this.utilisateurService.designerEnseignant(membre.identifiant!).subscribe({
           next: () => {
             this.chargerMembres();
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Succès',
-              detail: `${membre.prenom} ${membre.nom} est maintenant enseignant`,
-            });
+            this.notificationService.success(
+              `${membre.prenom} ${membre.nom} est maintenant enseignant`,
+            );
           },
-          error: (err) => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Erreur',
-              detail: err.error.message,
-            });
-          },
+          error: (err) => this.notificationService.error(err),
         });
       },
     });
@@ -149,19 +139,9 @@ export class MembreComponent implements OnInit {
             next: () => {
               this.showNiveauDialog.set(false);
               this.chargerMembres();
-              this.messageService.add({
-                severity: 'success',
-                summary: 'Succès',
-                detail: `Niveau mis à jour avec succès`,
-              });
+              this.notificationService.success('Niveau mis à jour avec succès');
             },
-            error: (err) => {
-              this.messageService.add({
-                severity: 'error',
-                summary: 'Erreur',
-                detail: err.error.message,
-              });
-            },
+            error: (err) => this.notificationService.error(err),
           });
       },
     });
@@ -176,19 +156,9 @@ export class MembreComponent implements OnInit {
         this.utilisateurService.supprimer(membre.identifiant!).subscribe({
           next: () => {
             this.chargerMembres();
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Succès',
-              detail: `${membre.prenom} ${membre.nom} supprimé avec succès`,
-            });
+            this.notificationService.success(`${membre.prenom} ${membre.nom} supprimé avec succès`);
           },
-          error: (err) => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Erreur',
-              detail: err.error.message,
-            });
-          },
+          error: (err) => this.notificationService.error(err),
         });
       },
     });

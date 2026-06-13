@@ -5,7 +5,8 @@ export interface Competition {
   identifiant?: number;
   titre: string;
   lieu: string;
-  niveauCible: number;
+  niveauCible?: number;
+  duree?: number;
   creneau?: Creneau;
   enseignant?: Utilisateur;
 }
