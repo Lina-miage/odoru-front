@@ -51,7 +51,7 @@ import { DateFormatPipe } from '../../pipes/date-format.pipe';
 })
 export class BadgesComponent implements OnInit {
   membres: Utilisateur[] = [];
-  secretaires: Utilisateur[] = [];
+  secretaire: Utilisateur | null = null;
   enseignants: Utilisateur[] = [];
   cours: Cours[] = [];
   badges: Badge[] = [];
@@ -60,11 +60,15 @@ export class BadgesComponent implements OnInit {
   showAttribuerDialog = signal(false);
   showBadgerDialog = signal(false);
   showPresencesDialog = signal(false);
+  showDissocierDialog = signal(false);
+  badgeADissocier = signal<Badge | null>(null);
 
   membreIdSelectionne: number | null = null;
   secretaireIdSelectionne: number | null = null;
   coursIdSelectionne: number | null = null;
   numeroBadge: string = '';
+  secretaireDissociationId: number | null = null;
+  membreBadgerIdSelectionne: number | null = null;
 
   constructor(
     private badgeService: BadgeService,
@@ -84,8 +88,8 @@ export class BadgesComponent implements OnInit {
     this.utilisateurService.getAll().subscribe({
       next: (data) => {
         this.membres = data.filter((u) => u.role === 'MEMBRE');
-        this.secretaires = data.filter((u) => u.role === 'SECRETAIRE');
         this.enseignants = data.filter((u) => u.role === 'ENSEIGNANT');
+        this.secretaire = data.find((u) => u.role === 'SECRETAIRE') ?? null;
       },
       error: (err) => this.notificationService.error(err),
     });
@@ -112,19 +116,23 @@ export class BadgesComponent implements OnInit {
   }
 
   attribuerBadge() {
-    if (!this.membreIdSelectionne || !this.secretaireIdSelectionne) {
-      this.notificationService.warn('Veuillez sélectionner un membre et un secrétaire');
+    if (!this.membreIdSelectionne) {
+      this.notificationService.warn('Veuillez sélectionner un membre');
+      return;
+    }
+
+    if (!this.secretaire) {
+      this.notificationService.warn('Aucune secrétaire trouvée dans le système');
       return;
     }
 
     this.badgeService
-      .attribuerBadge(this.membreIdSelectionne, this.secretaireIdSelectionne)
+      .attribuerBadge(this.membreIdSelectionne, this.secretaire.identifiant!)
       .subscribe({
         next: () => {
           this.chargerBadges();
           this.showAttribuerDialog.set(false);
           this.membreIdSelectionne = null;
-          this.secretaireIdSelectionne = null;
           this.notificationService.success('Badge attribué avec succès');
         },
         error: (err) => this.notificationService.error(err),
@@ -151,19 +159,25 @@ export class BadgesComponent implements OnInit {
   }
 
   badger() {
-    if (!this.numeroBadge || !this.coursIdSelectionne) {
+    if (!this.membreBadgerIdSelectionne || !this.coursIdSelectionne) {
       this.notificationService.warn('Veuillez remplir tous les champs');
       return;
     }
 
-    this.badgeService.badger(this.numeroBadge, this.coursIdSelectionne).subscribe({
-      next: () => {
-        this.showBadgerDialog.set(false);
-        this.numeroBadge = '';
-        this.coursIdSelectionne = null;
-        this.notificationService.success('Présence enregistrée avec succès');
+    // Récupérer le badge du membre
+    this.badgeService.getBadgeByMembre(this.membreBadgerIdSelectionne).subscribe({
+      next: (badge) => {
+        this.badgeService.badger(badge.numero!, this.coursIdSelectionne!).subscribe({
+          next: () => {
+            this.showBadgerDialog.set(false);
+            this.membreBadgerIdSelectionne = null;
+            this.coursIdSelectionne = null;
+            this.notificationService.success('Présence enregistrée avec succès');
+          },
+          error: (err) => this.notificationService.error(err),
+        });
       },
-      error: (err) => this.notificationService.error(err),
+      error: () => this.notificationService.warn("Ce membre n'a pas de badge"),
     });
   }
 
@@ -182,5 +196,35 @@ export class BadgesComponent implements OnInit {
       label: `${c.titre} - ${c.creneau?.jourSemaine} ${c.creneau?.date}`,
       value: c.identifiant,
     }));
+  }
+
+  ouvrirDissociation(badge: Badge) {
+    this.badgeADissocier.set(badge);
+    this.secretaireDissociationId = null;
+    this.showDissocierDialog.set(true);
+  }
+
+  dissocierBadge() {
+    if (!this.secretaireDissociationId) {
+      this.notificationService.warn('Veuillez sélectionner un secrétaire');
+      return;
+    }
+
+    this.badgeService
+      .dissocierBadge(this.badgeADissocier()!.porteur!.identifiant!, this.secretaireDissociationId)
+      .subscribe({
+        next: () => {
+          this.badges = this.badges.filter(
+            (b) => b.identifiant !== this.badgeADissocier()!.identifiant,
+          );
+          this.showDissocierDialog.set(false);
+          this.notificationService.success('Badge dissocié avec succès');
+        },
+        error: (err) => this.notificationService.error(err),
+      });
+  }
+
+  get aucunBadge(): boolean {
+    return this.badges.length === 0;
   }
 }

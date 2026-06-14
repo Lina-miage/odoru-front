@@ -16,22 +16,11 @@
           id="membre"
           [options]="membres"
           [(ngModel)]="membreIdSelectionne"
-          optionLabel="prenom"
+          optionLabel="nomUtilisateur"
           optionValue="identifiant"
           style="width: 100%"
         />
         <label for="membre">Membre</label>
-      </p-floatlabel>
-      <p-floatlabel>
-        <p-select
-          id="secretaire"
-          [options]="secretaires"
-          [(ngModel)]="secretaireIdSelectionne"
-          optionLabel="prenom"
-          optionValue="identifiant"
-          style="width: 100%"
-        />
-        <label for="secretaire">Secrétaire</label>
       </p-floatlabel>
       <app-form-buttons
         labelConfirmer="Attribuer"
@@ -51,8 +40,15 @@
   >
     <div style="display: flex; flex-direction: column; gap: 1.5rem; padding: 1rem">
       <p-floatlabel>
-        <input pInputText id="numeroBadge" [(ngModel)]="numeroBadge" style="width: 100%" />
-        <label for="numeroBadge">Numéro de badge</label>
+        <p-select
+          id="membreBadger"
+          [options]="membres"
+          [(ngModel)]="membreBadgerIdSelectionne"
+          optionLabel="nomUtilisateur"
+          optionValue="identifiant"
+          style="width: 100%"
+        />
+        <label for="membreBadger">Membre</label>
       </p-floatlabel>
       <p-floatlabel>
         <p-select
@@ -99,11 +95,35 @@
     </p-table>
   </p-dialog>
 
+  <p-dialog
+    header="Dissocier le badge"
+    [visible]="showDissocierDialog()"
+    (visibleChange)="showDissocierDialog.set($event)"
+    [modal]="true"
+    [style]="{ width: '400px' }"
+  >
+    <div style="display: flex; flex-direction: column; gap: 1.5rem; padding: 1rem">
+      <p>
+        Dissocier le badge de
+        <strong>{{ badgeADissocier()?.porteur?.nomUtilisateur }}</strong>
+        ?
+      </p>
+      <app-form-buttons
+        labelConfirmer="Dissocier"
+        (annuler)="showDissocierDialog.set(false)"
+        (confirmer)="dissocierBadge()"
+      />
+    </div>
+  </p-dialog>
+
   <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-bottom: 1rem">
     <p-button
       label="Badger"
       icon="pi pi-check"
-      [style]="{ 'background-color': '#217b8a', border: 'none' }"
+      [disabled]="aucunBadge"
+      [pTooltip]="aucunBadge ? 'Aucun badge n\'a été attribué' : ''"
+      tooltipPosition="bottom"
+      [style]="{ 'background-color': aucunBadge ? '#90949E' : '#217b8a', border: 'none' }"
       (onClick)="showBadgerDialog.set(true)"
     />
     <p-button
@@ -114,8 +134,9 @@
     />
   </div>
 
-  <app-page-header titre="Badges" />
-
+  <div styleClass="margin-top: 4rem">
+    <app-page-header titre="Badges" />
+  </div>
   <p-table [value]="badges" [paginator]="true" [rows]="10" dataKey="identifiant">
     <ng-template pTemplate="header">
       <tr>
@@ -139,7 +160,7 @@
             icon="pi pi-trash"
             couleur="#8F4A3F"
             tooltip="Dissocier le badge"
-            (clicked)="confirmerDissociation(badge)"
+            (clicked)="ouvrirDissociation(badge)"
           />
         </td>
       </tr>
