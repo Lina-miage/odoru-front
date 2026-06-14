@@ -48,7 +48,6 @@ import { ActionButtonComponent } from '../shared/action-button/action-button.com
 })
 export class MembreComponent implements OnInit {
   membres: Utilisateur[] = [];
-  showForm = signal(false);
   showNiveauDialog = signal(false);
   membreSelectionne = signal<Utilisateur | null>(null);
   niveauSelectionne = signal<number>(1);
@@ -60,16 +59,6 @@ export class MembreComponent implements OnInit {
     { label: 'Niveau 4', value: 4 },
     { label: 'Niveau 5', value: 5 },
   ];
-
-  nouveauMembre: Utilisateur = {
-    nom: '',
-    prenom: '',
-    courriel: '',
-    nomUtilisateur: '',
-    motDePasse: '',
-    niveauExpertise: 1,
-    adresse: { ville: '', pays: '' },
-  };
 
   constructor(
     private utilisateurService: UtilisateurService,
@@ -84,26 +73,6 @@ export class MembreComponent implements OnInit {
   chargerMembres() {
     this.utilisateurService.getAll().subscribe({
       next: (data) => (this.membres = data),
-      error: (err) => this.notificationService.error(err),
-    });
-  }
-
-  inscrire() {
-    this.utilisateurService.inscrire(this.nouveauMembre).subscribe({
-      next: () => {
-        this.chargerMembres();
-        this.showForm.set(false);
-        this.nouveauMembre = {
-          nom: '',
-          prenom: '',
-          courriel: '',
-          nomUtilisateur: '',
-          motDePasse: '',
-          niveauExpertise: 1,
-          adresse: { ville: '', pays: '' },
-        };
-        this.notificationService.success('Membre inscrit avec succès');
-      },
       error: (err) => this.notificationService.error(err),
     });
   }

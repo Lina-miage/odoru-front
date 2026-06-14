@@ -1,12 +1,17 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
-import { roleGuard } from './guards/role.guard';
+import { roleGuard } from './guards/role.guards';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   {
     path: 'login',
     loadComponent: () => import('./features/login/login.component').then((m) => m.LoginComponent),
+  },
+  {
+    path: 'inscription',
+    loadComponent: () =>
+      import('./features/inscription/inscription.component').then((m) => m.InscriptionComponent),
   },
   {
     path: 'unauthorized',

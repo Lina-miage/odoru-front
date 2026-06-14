@@ -1,0 +1,30 @@
+<div style="display: flex; justify-content: center; align-items: center; height: 100vh">
+  <p-toast />
+  <p-card header="Connexion à votre compte" styleClass="width: 400px;">
+    <div style="display: flex; flex-direction: column; gap: 1.5rem; padding: 1rem">
+      <p-floatlabel>
+        <input pInputText id="nomUtilisateur" [(ngModel)]="nomUtilisateur" style="width: 100%" />
+        <label for="nomUtilisateur">Nom d'utilisateur</label>
+      </p-floatlabel>
+      <p-floatlabel>
+        <p-password
+          id="motDePasse"
+          [(ngModel)]="motDePasse"
+          [feedback]="false"
+          (keyup)="$event.key === 'Enter' && login()"
+          style="width: 100%"
+        />
+        <label for="motDePasse">Mot de passe</label>
+      </p-floatlabel>
+      <p-button
+        label="Se connecter"
+        [style]="{ 'background-color': '#217b8a', border: 'none', width: '100%' }"
+        (onClick)="login()"
+      />
+      <div style="text-align: center; color: white">
+        Pas encore de compte ?
+        <a routerLink="/inscription" style="color: #217b8a">S'inscrire</a>
+      </div>
+    </div>
+  </p-card>
+</div>

@@ -1,0 +1,76 @@
+<div
+  style="
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+  "
+>
+  <p-toast />
+  <p-card header="Créer un compte Odoru" styleClass="width: 500px">
+    <div style="display: flex; flex-direction: column; gap: 1.5rem; padding-top: 1rem">
+      <div style="display: flex; gap: 1.5rem">
+        <p-floatlabel style="flex: 1">
+          <input pInputText id="nom" [(ngModel)]="utilisateur.nom" style="width: 100%" />
+          <label for="nom">Nom</label>
+        </p-floatlabel>
+        <p-floatlabel style="flex: 1">
+          <input pInputText id="prenom" [(ngModel)]="utilisateur.prenom" style="width: 100%" />
+          <label for="prenom">Prénom</label>
+        </p-floatlabel>
+      </div>
+      <div style="display: flex; gap: 1.5rem">
+        <p-floatlabel style="flex: 1">
+          <input pInputText id="courriel" [(ngModel)]="utilisateur.courriel" style="width: 100%" />
+          <label for="courriel">Email</label>
+        </p-floatlabel>
+      </div>
+      <div style="display: flex; gap: 1.5rem">
+        <p-floatlabel style="flex: 1">
+          <input
+            pInputText
+            id="ville"
+            [(ngModel)]="utilisateur.adresse!.ville"
+            style="width: 100%"
+          />
+          <label for="ville">Ville</label>
+        </p-floatlabel>
+        <p-floatlabel style="flex: 1">
+          <input pInputText id="pays" [(ngModel)]="utilisateur.adresse!.pays" style="width: 100%" />
+          <label for="pays">Pays</label>
+        </p-floatlabel>
+      </div>
+      <div style="display: flex; gap: 1.5rem">
+        <p-floatlabel style="flex: 1">
+          <input
+            pInputText
+            id="nomUtilisateur"
+            [(ngModel)]="utilisateur.nomUtilisateur"
+            style="width: 100%"
+          />
+          <label for="nomUtilisateur">Nom d'utilisateur</label>
+        </p-floatlabel>
+        <p-floatlabel style="flex: 1">
+          <p-password
+            id="motDePasse"
+            [(ngModel)]="utilisateur.motDePasse"
+            [feedback]="false"
+            (keyup)="$event.key === 'Enter' && inscrire()"
+            style="width: 100%"
+          />
+          <label for="motDePasse">Mot de passe</label>
+        </p-floatlabel>
+      </div>
+      <p-button
+        label="S'inscrire"
+        [style]="{ 'background-color': '#217b8a', border: 'none', width: '100%' }"
+        (onClick)="inscrire()"
+      />
+      <div style="text-align: center">
+        Déjà un compte ?
+        <a routerLink="/login" style="color: #217b8a">Se connecter</a>
+      </div>
+    </div>
+  </p-card>
+</div>

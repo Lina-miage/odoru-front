@@ -8,27 +8,47 @@
   "
 >
   <span style="font-weight: bold; font-size: 1.3rem; color: white">Odoru</span>
-  <div style="display: flex; gap: 2rem; font-size: 1.1rem">
-    <a routerLink="/membres" routerLinkActive="active" style="color: white; text-decoration: none"
-      >Membres</a
-    >
-    <a routerLink="/cours" routerLinkActive="active" style="color: white; text-decoration: none"
-      >Cours</a
-    >
-    <a
-      routerLink="/competitions"
-      routerLinkActive="active"
-      style="color: white; text-decoration: none"
-      >Compétitions</a
-    >
-    <a routerLink="/badges" routerLinkActive="active" style="color: white; text-decoration: none"
-      >Badges</a
-    >
-    <a
-      routerLink="/statistiques"
-      routerLinkActive="active"
-      style="color: white; text-decoration: none"
-      >Statistiques</a
-    >
+  <div style="display: flex; gap: 2rem; font-size: 1.1rem; align-items: center">
+    @if (role === 'SECRETAIRE' || role === 'PRESIDENT') {
+      <a routerLink="/membres" routerLinkActive="active" style="color: white; text-decoration: none"
+        >Membres</a
+      >
+    }
+    @if (
+      role === 'MEMBRE' || role === 'ENSEIGNANT' || role === 'SECRETAIRE' || role === 'PRESIDENT'
+    ) {
+      <a routerLink="/cours" routerLinkActive="active" style="color: white; text-decoration: none"
+        >Cours</a
+      >
+      <a
+        routerLink="/competitions"
+        routerLinkActive="active"
+        style="color: white; text-decoration: none"
+        >Compétitions</a
+      >
+    }
+    @if (role === 'SECRETAIRE' || role === 'PRESIDENT') {
+      <a routerLink="/badges" routerLinkActive="active" style="color: white; text-decoration: none"
+        >Badges</a
+      >
+    }
+    @if (role === 'PRESIDENT') {
+      <a
+        routerLink="/statistiques"
+        routerLinkActive="active"
+        style="color: white; text-decoration: none"
+        >Statistiques</a
+      >
+    }
+    @if (authService.isConnecte()) {
+      <span style="color: rgb(50, 59, 81); font-size: 0.9rem">{{
+        authService.utilisateurConnecte()?.nomUtilisateur
+      }}</span>
+      <p-button
+        icon="pi pi-sign-out"
+        [style]="{ 'background-color': '#8F4A3F', border: 'none' }"
+        (onClick)="logout()"
+      />
+    }
   </div>
 </nav>
