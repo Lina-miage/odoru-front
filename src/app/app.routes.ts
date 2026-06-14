@@ -16,6 +16,14 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/competitions/competitions.component').then((m) => m.CompetitionsComponent),
   },
-  /* { path: 'badges', loadComponent: () => import('./features/badges/badges.component').then(m => m.BadgesComponent) },
-  { path: 'statistiques', loadComponent: () => import('./features/statistiques/statistiques.component').then(m => m.StatistiquesComponent) },*/
+  {
+    path: 'badges',
+    loadComponent: () =>
+      import('./features/badges/badges.component').then((m) => m.BadgesComponent),
+  },
+  {
+    path: 'statistiques',
+    loadComponent: () =>
+      import('./features/statistiques/statistiques.component').then((m) => m.StatistiquesComponent),
+  },
 ];

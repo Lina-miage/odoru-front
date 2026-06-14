@@ -1,1 +1,148 @@
-<p>badges works!</p>
+<div style="padding: 2rem">
+  <p-toast />
+  <p-confirmdialog />
+
+  <!-- Dialog attribuer badge -->
+  <p-dialog
+    header="Attribuer un badge"
+    [visible]="showAttribuerDialog()"
+    (visibleChange)="showAttribuerDialog.set($event)"
+    [modal]="true"
+    [style]="{ width: '400px' }"
+  >
+    <div style="display: flex; flex-direction: column; gap: 1.5rem; padding: 1rem">
+      <p-floatlabel>
+        <p-select
+          id="membre"
+          [options]="membres"
+          [(ngModel)]="membreIdSelectionne"
+          optionLabel="prenom"
+          optionValue="identifiant"
+          style="width: 100%"
+        />
+        <label for="membre">Membre</label>
+      </p-floatlabel>
+      <p-floatlabel>
+        <p-select
+          id="secretaire"
+          [options]="secretaires"
+          [(ngModel)]="secretaireIdSelectionne"
+          optionLabel="prenom"
+          optionValue="identifiant"
+          style="width: 100%"
+        />
+        <label for="secretaire">Secrétaire</label>
+      </p-floatlabel>
+      <app-form-buttons
+        labelConfirmer="Attribuer"
+        (annuler)="showAttribuerDialog.set(false)"
+        (confirmer)="attribuerBadge()"
+      />
+    </div>
+  </p-dialog>
+
+  <!-- Dialog badger -->
+  <p-dialog
+    header="Badger à un cours"
+    [visible]="showBadgerDialog()"
+    (visibleChange)="showBadgerDialog.set($event)"
+    [modal]="true"
+    [style]="{ width: '400px' }"
+  >
+    <div style="display: flex; flex-direction: column; gap: 1.5rem; padding: 1rem">
+      <p-floatlabel>
+        <input pInputText id="numeroBadge" [(ngModel)]="numeroBadge" style="width: 100%" />
+        <label for="numeroBadge">Numéro de badge</label>
+      </p-floatlabel>
+      <p-floatlabel>
+        <p-select
+          id="cours"
+          [options]="coursOptions"
+          [(ngModel)]="coursIdSelectionne"
+          optionLabel="label"
+          optionValue="value"
+          style="width: 100%"
+        />
+        <label for="cours">Cours</label>
+      </p-floatlabel>
+      <app-form-buttons
+        labelConfirmer="Badger"
+        (annuler)="showBadgerDialog.set(false)"
+        (confirmer)="badger()"
+      />
+    </div>
+  </p-dialog>
+
+  <!-- Dialog presences -->
+  <p-dialog
+    header="Présences"
+    [visible]="showPresencesDialog()"
+    (visibleChange)="showPresencesDialog.set($event)"
+    [modal]="true"
+    [style]="{ width: '600px' }"
+  >
+    <p-table [value]="presences()">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Cours</th>
+          <th>Date</th>
+          <th>Heure</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-presence>
+        <tr>
+          <td>{{ presence.cours?.titre }}</td>
+          <td>{{ presence.cours?.creneau?.date | dateFormat }}</td>
+          <td>{{ presence.cours?.creneau?.heureDebut?.slice(0, 5) }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-dialog>
+
+  <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-bottom: 1rem">
+    <p-button
+      label="Badger"
+      icon="pi pi-check"
+      [style]="{ 'background-color': '#217b8a', border: 'none' }"
+      (onClick)="showBadgerDialog.set(true)"
+    />
+    <p-button
+      label="Attribuer un badge"
+      icon="pi pi-plus"
+      [style]="{ 'background-color': '#217b8a', border: 'none' }"
+      (onClick)="showAttribuerDialog.set(true)"
+    />
+  </div>
+
+  <app-page-header titre="Badges" />
+
+  <p-table [value]="badges" [paginator]="true" [rows]="10" dataKey="identifiant">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Numéro</th>
+        <th>Porteur</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-badge>
+      <tr>
+        <td>{{ badge.numero }}</td>
+        <td>{{ badge.porteur?.prenom }} {{ badge.porteur?.nom }}</td>
+        <td style="display: flex; gap: 0.5rem">
+          <app-action-button
+            icon="pi pi-eye"
+            couleur="#6495ED"
+            tooltip="Voir les présences"
+            (clicked)="voirPresences(badge)"
+          />
+          <app-action-button
+            icon="pi pi-trash"
+            couleur="#8F4A3F"
+            tooltip="Dissocier le badge"
+            (clicked)="confirmerDissociation(badge)"
+          />
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
