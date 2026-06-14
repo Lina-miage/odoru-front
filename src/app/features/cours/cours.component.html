@@ -77,45 +77,11 @@
     <ng-template pTemplate="footer"> </ng-template>
   </p-dialog>
 
-  <p-dialog
-    header="Créer un créneau"
+  <app-creneau-dialog
     [visible]="showCreneauDialog()"
-    (visibleChange)="showCreneauDialog.set($event); showCreneauxDialog.set(!$event)"
-    [modal]="true"
-    [style]="{ width: '400px' }"
-  >
-    <div style="display: flex; flex-direction: column; gap: 1.5rem; padding: 1rem">
-      <p-floatlabel>
-        <p-datepicker
-          id="date"
-          [(ngModel)]="nouveauCreneau.date"
-          [inline]="false"
-          dateFormat="yy-mm-dd"
-          [minDate]="dateMin"
-          [appendTo]="'body'"
-          style="width: 100%"
-        />
-        <label for="date">Date</label>
-      </p-floatlabel>
-      <p-floatlabel>
-        <p-datepicker
-          id="heureDebut"
-          [(ngModel)]="nouveauCreneau.heureDebut"
-          [timeOnly]="true"
-          [appendTo]="'body'"
-          style="width: 100%"
-        />
-        <label for="heureDebut">Heure de début</label>
-      </p-floatlabel>
-      <div style="display: flex; justify-content: flex-end; gap: 1rem">
-        <p-button
-          label="Créer"
-          [style]="{ 'background-color': '#217b8a', border: 'none' }"
-          (onClick)="creerCreneau()"
-        />
-      </div>
-    </div>
-  </p-dialog>
+    (visibleChange)="showCreneauDialog.set($event)"
+    (confirmer)="creerCreneau($event)"
+  />
 
   <p-dialog
     header="Inscrits au cours"
@@ -284,7 +250,7 @@
           {{ unCours.creneau?.jourSemaine }} {{ unCours.creneau?.date | dateFormat }}
           <strong>
             {{ unCours.creneau?.heureDebut?.slice(0, 5) }} -
-            {{ calculerHeureFin(unCours.creneau?.heureDebut!, unCours.duree) }}
+            {{ creneauService.calculerHeureFin(unCours.creneau?.heureDebut!, unCours.duree!) }}
           </strong>
         </td>
         <td>{{ unCours.inscrits?.length ?? 0 }}</td>

@@ -2,45 +2,11 @@
   <p-toast />
   <p-confirmdialog />
 
-  <!-- Dialog créer créneau -->
-  <p-dialog
-    header="Créer un créneau"
+  <app-creneau-dialog
     [visible]="showCreneauDialog()"
     (visibleChange)="showCreneauDialog.set($event)"
-    [modal]="true"
-    [style]="{ width: '400px' }"
-  >
-    <div style="display: flex; flex-direction: column; gap: 1.5rem; padding: 1rem">
-      <p-floatlabel>
-        <p-datepicker
-          id="date"
-          [(ngModel)]="nouveauCreneau.date"
-          [inline]="false"
-          dateFormat="yy-mm-dd"
-          [minDate]="dateMin"
-          [appendTo]="'body'"
-          style="width: 100%"
-        />
-        <label for="date">Date</label>
-      </p-floatlabel>
-      <p-floatlabel>
-        <p-datepicker
-          id="heureDebut"
-          [(ngModel)]="nouveauCreneau.heureDebut"
-          [timeOnly]="true"
-          [appendTo]="'body'"
-          style="width: 100%"
-        />
-        <label for="heureDebut">Heure de début</label>
-      </p-floatlabel>
-      <app-form-buttons
-        labelConfirmer="Créer"
-        labelAnnuler="Annuler"
-        (annuler)="showCreneauDialog.set(false)"
-        (confirmer)="creerCreneau()"
-      />
-    </div>
-  </p-dialog>
+    (confirmer)="creerCreneau($event)"
+  />
 
   <!-- Dialog résultats -->
   <p-dialog
@@ -265,7 +231,12 @@
             {{ competition.creneau?.jourSemaine }} {{ competition.creneau?.date | dateFormat }}
             <strong>
               {{ competition.creneau?.heureDebut?.slice(0, 5) }} -
-              {{ calculerHeureFin(competition.creneau?.heureDebut!, competition.duree!) }}
+              {{
+                creneauService.calculerHeureFin(
+                  competition.creneau?.heureDebut!,
+                  competition.duree!
+                )
+              }}
             </strong>
           </td>
           <td style="display: flex; gap: 0.5rem">

@@ -19,11 +19,12 @@ import { Select } from 'primeng/select';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { DialogModule } from 'primeng/dialog';
-import { DatePicker } from 'primeng/datepicker';
 import { PageHeaderComponent } from '../shared/page-header/page-header.component';
 import { DateFormatPipe } from '../../pipes/date-format.pipe';
 import { FormButtonsComponent } from '../shared/form-buttons/form-buttons.component';
 import { ActionButtonComponent } from '../shared/action-button/action-button.component';
+import { CreneauDialogComponent } from '../shared/creneau-dialog/creneau-dialog.component';
+import { CreneauService } from '../../services/creneau.service';
 
 @Component({
   selector: 'app-cours',
@@ -42,11 +43,11 @@ import { ActionButtonComponent } from '../shared/action-button/action-button.com
     Select,
     ToastModule,
     DialogModule,
-    DatePicker,
     PageHeaderComponent,
     DateFormatPipe,
     FormButtonsComponent,
     ActionButtonComponent,
+    CreneauDialogComponent,
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './cours.component.html',
@@ -90,6 +91,7 @@ export class CoursComponent implements OnInit {
     private utilisateurService: UtilisateurService,
     private confirmationService: ConfirmationService,
     private notificationService: NotificationService,
+    public creneauService: CreneauService,
   ) {}
 
   ngOnInit() {
@@ -123,33 +125,18 @@ export class CoursComponent implements OnInit {
     });
   }
 
-  creerCreneau() {
-    if (!this.nouveauCreneau.date || !this.nouveauCreneau.heureDebut) {
+  creerCreneau(nouveauCreneau: any) {
+    if (!nouveauCreneau.date || !nouveauCreneau.heureDebut) {
       this.notificationService.warn('Veuillez remplir tous les champs');
       return;
     }
 
-    const date = this.nouveauCreneau.date as Date;
-    const heure = this.nouveauCreneau.heureDebut as Date;
-
-    const jours = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-    const jourSemaine = jours[date.getDay()];
-
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-
-    const creneauFormate: Creneau = {
-      jourSemaine: jourSemaine,
-      date: `${year}-${month}-${day}`,
-      heureDebut: `${String(heure.getHours()).padStart(2, '0')}:${String(heure.getMinutes()).padStart(2, '0')}:00`,
-    };
+    const creneauFormate = this.creneauService.formaterCreneau(nouveauCreneau);
 
     this.coursService.creerCreneau(creneauFormate).subscribe({
       next: () => {
         this.chargerCreneaux();
         this.showCreneauDialog.set(false);
-        this.nouveauCreneau = { jourSemaine: '', heureDebut: null, date: null };
         this.notificationService.success('Créneau créé avec succès');
       },
       error: (err) => this.notificationService.error(err),
@@ -231,15 +218,6 @@ export class CoursComponent implements OnInit {
 
   onNiveauChange() {
     this.enseignantId = null;
-  }
-
-  calculerHeureFin(heureDebut: string, duree: number): string {
-    if (!heureDebut || !duree) return '';
-    const [heures, minutes] = heureDebut.split(':').map(Number);
-    const totalMinutes = heures * 60 + minutes + duree;
-    const heureFin = Math.floor(totalMinutes / 60) % 24;
-    const minutesFin = totalMinutes % 60;
-    return `${String(heureFin).padStart(2, '0')}:${String(minutesFin).padStart(2, '0')}`;
   }
 
   coursFiltres = computed(() => {
