@@ -16,18 +16,28 @@
       </p>
       <p-select
         [options]="niveaux"
-        [(ngModel)]="niveauSelectionne"
+        [ngModel]="niveauSelectionne()"
+        (ngModelChange)="niveauSelectionne.set($event)"
         optionLabel="label"
         optionValue="value"
+        [appendTo]="'body'"
         style="width: 100%"
       />
       <p-button label="Confirmer" (onClick)="confirmerNiveau()" />
     </div>
   </p-dialog>
   <div style="margin-top: 4rem">
-    <app-page-header titre="Membres d'Odoru" />
+    <app-page-header titre="Membres d'Odoru">
+      <input
+        pInputText
+        [ngModel]="recherche()"
+        (ngModelChange)="recherche.set($event)"
+        placeholder="Rechercher un membre..."
+        style="width: 250px"
+      />
+    </app-page-header>
   </div>
-  <p-table [value]="membres" [paginator]="true" [rows]="10" dataKey="identifiant">
+  <p-table [value]="membresFiltres()" [paginator]="true" [rows]="10" dataKey="identifiant">
     <ng-template pTemplate="header">
       <tr>
         <th>Nom</th>

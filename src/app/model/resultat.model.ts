@@ -6,4 +6,5 @@ export interface Resultat {
   note: number;
   eleve?: Utilisateur;
   competition?: Competition;
+  resultats?: Resultat[];
 }

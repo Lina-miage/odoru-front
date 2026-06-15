@@ -4,10 +4,9 @@ import { Observable } from 'rxjs';
 import { Utilisateur } from '../model/utilisateur.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UtilisateurService {
-
   private apiUrl = 'http://localhost:8080/api/utilisateurs';
 
   constructor(private http: HttpClient) {}
@@ -34,5 +33,13 @@ export class UtilisateurService {
 
   supprimer(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  getEnseignants(): Observable<Utilisateur[]> {
+    return this.http.get<Utilisateur[]>(`${this.apiUrl}/enseignants`);
+  }
+
+  getMembres(): Observable<Utilisateur[]> {
+    return this.http.get<Utilisateur[]>(`${this.apiUrl}/membres`);
   }
 }

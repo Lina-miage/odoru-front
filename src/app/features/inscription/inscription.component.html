@@ -13,17 +13,17 @@
       <div style="display: flex; gap: 1.5rem">
         <p-floatlabel style="flex: 1">
           <input pInputText id="nom" [(ngModel)]="utilisateur.nom" style="width: 100%" />
-          <label for="nom">Nom</label>
+          <label for="nom">Nom<span style="color: rgb(148, 78, 78)">*</span></label>
         </p-floatlabel>
         <p-floatlabel style="flex: 1">
           <input pInputText id="prenom" [(ngModel)]="utilisateur.prenom" style="width: 100%" />
-          <label for="prenom">Prénom</label>
+          <label for="prenom">Prénom<span style="color: rgb(148, 78, 78)">*</span></label>
         </p-floatlabel>
       </div>
       <div style="display: flex; gap: 1.5rem">
         <p-floatlabel style="flex: 1">
           <input pInputText id="courriel" [(ngModel)]="utilisateur.courriel" style="width: 100%" />
-          <label for="courriel">Email</label>
+          <label for="courriel">Email<span style="color: rgb(148, 78, 78)">*</span></label>
         </p-floatlabel>
       </div>
       <div style="display: flex; gap: 1.5rem">
@@ -49,7 +49,9 @@
             [(ngModel)]="utilisateur.nomUtilisateur"
             style="width: 100%"
           />
-          <label for="nomUtilisateur">Nom d'utilisateur</label>
+          <label for="nomUtilisateur"
+            >Nom d'utilisateur<span style="color: rgb(148, 78, 78)">*</span></label
+          >
         </p-floatlabel>
         <p-floatlabel style="flex: 1">
           <p-password
@@ -59,7 +61,7 @@
             (keyup)="$event.key === 'Enter' && inscrire()"
             style="width: 100%"
           />
-          <label for="motDePasse">Mot de passe</label>
+          <label for="motDePasse">Mot de passe<span style="color: rgb(148, 78, 78)">*</span></label>
         </p-floatlabel>
       </div>
       <p-button

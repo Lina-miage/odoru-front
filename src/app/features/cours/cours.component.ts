@@ -16,7 +16,7 @@ import { FloatLabel } from 'primeng/floatlabel';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { Select } from 'primeng/select';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { ConfirmationService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { DialogModule } from 'primeng/dialog';
 import { PageHeaderComponent } from '../shared/page-header/page-header.component';
@@ -25,6 +25,8 @@ import { FormButtonsComponent } from '../shared/form-buttons/form-buttons.compon
 import { ActionButtonComponent } from '../shared/action-button/action-button.component';
 import { CreneauDialogComponent } from '../shared/creneau-dialog/creneau-dialog.component';
 import { CreneauService } from '../../services/creneau.service';
+import { AuthService } from '../../services/auth.service';
+import { BadgeService } from '../../services/badge.service';
 
 @Component({
   selector: 'app-cours',
@@ -49,7 +51,7 @@ import { CreneauService } from '../../services/creneau.service';
     ActionButtonComponent,
     CreneauDialogComponent,
   ],
-  providers: [ConfirmationService, MessageService],
+  providers: [ConfirmationService],
   templateUrl: './cours.component.html',
 })
 export class CoursComponent implements OnInit {
@@ -63,12 +65,16 @@ export class CoursComponent implements OnInit {
   showForm = signal(false);
   showCreneauDialog = signal(false);
   showCreneauxDialog = signal(false);
-  showTousCreneaux = signal(false);
   coursSelectionne = signal<Cours | null>(null);
   showInscritsDialog = signal(false);
-
+  showBadgerDialog = signal(false);
   filtreNiveau = signal<number | null>(null);
   filtreEnseignantId = signal<number | null>(null);
+  aBadge = signal(false);
+  aDejaAllBadge = signal(false);
+  presencesMembre = signal<any[]>([]);
+
+  coursIdBadger: number | null = null;
 
   nouveauCreneau: any = {
     jourSemaine: '',
@@ -92,12 +98,17 @@ export class CoursComponent implements OnInit {
     private confirmationService: ConfirmationService,
     private notificationService: NotificationService,
     public creneauService: CreneauService,
+    public authService: AuthService,
+    private badgeService: BadgeService,
   ) {}
 
   ngOnInit() {
     this.chargerCours();
     this.chargerCreneaux();
     this.chargerEnseignants();
+    if (this.authService.getRole() === 'MEMBRE') {
+      this.verifierBadgeEtPresences();
+    }
   }
 
   get aucunCreneau(): boolean {
@@ -119,8 +130,8 @@ export class CoursComponent implements OnInit {
   }
 
   chargerEnseignants() {
-    this.utilisateurService.getAll().subscribe({
-      next: (data) => (this.enseignants = data.filter((u) => u.role === 'ENSEIGNANT')),
+    this.utilisateurService.getEnseignants().subscribe({
+      next: (data) => (this.enseignants = data),
       error: (err) => this.notificationService.error(err),
     });
   }
@@ -144,8 +155,15 @@ export class CoursComponent implements OnInit {
   }
 
   creerCours() {
-    if (!this.enseignantId || !this.creneauSelectionne || !this.nouveauCours.niveauCible) {
-      this.notificationService.warn('Veuillez remplir tous les champs obligatoires');
+    if (
+      !this.enseignantId ||
+      !this.creneauSelectionne ||
+      !this.nouveauCours.niveauCible ||
+      !this.nouveauCours.duree ||
+      !this.nouveauCours.titre ||
+      !this.nouveauCours.lieu
+    ) {
+      this.notificationService.warn('Veuillez remplir tous les champs');
       return;
     }
 
@@ -192,11 +210,6 @@ export class CoursComponent implements OnInit {
     return coursAssocie ? coursAssocie.titre : 'Aucun cours';
   }
 
-  fermerTousCreneaux() {
-    this.showTousCreneaux.set(false);
-    this.showCreneauxDialog.set(true);
-  }
-
   fermerCreerCreneau() {
     this.showCreneauDialog.set(false);
     this.showCreneauxDialog.set(true);
@@ -221,7 +234,16 @@ export class CoursComponent implements OnInit {
   }
 
   coursFiltres = computed(() => {
-    return this.cours().filter((c) => {
+    const membreId = this.authService.utilisateurConnecte()?.identifiant;
+    const role = this.authService.getRole();
+
+    let liste = this.cours();
+
+    if (role === 'MEMBRE') {
+      liste = liste.filter((c) => c.inscrits?.some((i) => i.eleve?.identifiant === membreId));
+    }
+
+    return liste.filter((c) => {
       const matchNiveau = this.filtreNiveau() ? c.niveauCible === this.filtreNiveau() : true;
       const matchEnseignant = this.filtreEnseignantId()
         ? c.enseignant?.identifiant === this.filtreEnseignantId()
@@ -233,5 +255,70 @@ export class CoursComponent implements OnInit {
   voirInscrits(cours: Cours) {
     this.coursSelectionne.set(cours);
     this.showInscritsDialog.set(true);
+  }
+
+  get coursOptions() {
+    return this.cours().map((c) => ({
+      label: `${c.titre} - ${c.creneau?.jourSemaine} ${c.creneau?.date}`,
+      value: c.identifiant,
+    }));
+  }
+
+  verifierBadgeEtPresences() {
+    const membreId = this.authService.utilisateurConnecte()?.identifiant;
+    if (!membreId) return;
+
+    this.badgeService.getBadgeByMembre(membreId).subscribe({
+      next: (badge) => {
+        this.aBadge.set(true);
+        this.badgeService.getPresencesByEleve(membreId).subscribe({
+          next: (presences) => {
+            this.presencesMembre.set(presences);
+            const coursInscrits = this.cours().filter((c) =>
+              c.inscrits?.some((i) => i.eleve?.identifiant === membreId),
+            );
+            const aDejaBadge = coursInscrits.every((c) =>
+              presences.some((p) => p.cours?.identifiant === c.identifiant),
+            );
+            this.aDejaAllBadge.set(coursInscrits.length === 0 || aDejaBadge);
+          },
+        });
+      },
+      error: () => this.aBadge.set(false),
+    });
+  }
+
+  aBadgePourCours(coursId: number): boolean {
+    return this.presencesMembre().some((p) => p.cours?.identifiant === coursId);
+  }
+
+  badgerCours(cours: Cours) {
+    this.confirmationService.confirm({
+      message: `Confirmer votre présence au cours "${cours.titre}" ?`,
+      header: 'Confirmation',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        const membreId = this.authService.utilisateurConnecte()?.identifiant;
+        this.badgeService.getBadgeByMembre(membreId!).subscribe({
+          next: (badge) => {
+            this.badgeService.badger(badge.numero!, cours.identifiant!).subscribe({
+              next: () => {
+                this.notificationService.success('Présence enregistrée avec succès');
+                this.verifierBadgeEtPresences();
+              },
+              error: (err) => this.notificationService.error(err),
+            });
+          },
+          error: () => this.notificationService.warn("Vous n'avez pas de badge"),
+        });
+      },
+    });
+  }
+
+  get creneauxAssociations() {
+    return this.creneaux.map((c) => ({
+      creneauId: c.id!,
+      titre: this.getCoursParCreneau(c.id!),
+    }));
   }
 }

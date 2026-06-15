@@ -9,7 +9,7 @@
     [modal]="true"
     [style]="{ width: '600px' }"
   >
-    <p-table [value]="elevesPresents()">
+    <p-table [value]="elevesPresents()" [paginator]="true" [rows]="5">
       <ng-template pTemplate="header">
         <tr>
           <th>Nom</th>
@@ -24,23 +24,28 @@
           <td>{{ eleve.niveauExpertise }}</td>
         </tr>
       </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="3" style="text-align: center">Aucun élève présent</td>
+        </tr>
+      </ng-template>
     </p-table>
   </p-dialog>
 
   <!-- Dialog cours par élève -->
   <p-dialog
-    header="Cours de l'élève"
+    header="Cours suivis"
     [visible]="showCoursEleveDialog()"
     (visibleChange)="showCoursEleveDialog.set($event)"
     [modal]="true"
-    [style]="{ width: '700px' }"
+    [style]="{ width: '600px' }"
   >
-    <p-table [value]="coursParEleve()">
+    <p-table [value]="coursParEleve()" [paginator]="true" [rows]="5">
       <ng-template pTemplate="header">
         <tr>
           <th>Cours</th>
           <th>Date</th>
-          <th>Présent</th>
+          <th>Présence</th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-item>
@@ -48,10 +53,15 @@
           <td>{{ item.titre }}</td>
           <td>{{ item.date | dateFormat }}</td>
           <td>
-            <span [style]="{ color: item.present ? '#4CAF50' : '#8F4A3F' }">
+            <span [style]="{ color: item.present ? '#4CAF50' : '#8F4A3F', fontWeight: 'bold' }">
               {{ item.present ? '✓ Présent' : '✗ Absent' }}
             </span>
           </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="3" style="text-align: center">Aucun cours trouvé</td>
         </tr>
       </ng-template>
     </p-table>
@@ -59,13 +69,13 @@
 
   <!-- Dialog compétitions par élève -->
   <p-dialog
-    header="Compétitions de l'élève"
+    header="Compétitions participées"
     [visible]="showCompetitionsEleveDialog()"
     (visibleChange)="showCompetitionsEleveDialog.set($event)"
     [modal]="true"
-    [style]="{ width: '700px' }"
+    [style]="{ width: '600px' }"
   >
-    <p-table [value]="competitionsParEleve()">
+    <p-table [value]="competitionsParEleve()" [paginator]="true" [rows]="5">
       <ng-template pTemplate="header">
         <tr>
           <th>Compétition</th>
@@ -82,28 +92,39 @@
           </td>
         </tr>
       </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="3" style="text-align: center">Aucune compétition trouvée</td>
+        </tr>
+      </ng-template>
     </p-table>
   </p-dialog>
 
-  <app-page-header titre="Statistiques" />
+  <app-page-header titre="Tableau de bord" />
 
-  <!-- Cartes globales -->
-  <div style="display: flex; gap: 2rem; margin-bottom: 2rem">
+  <!-- Cards globales -->
+  <div style="display: flex; gap: 2rem; margin-bottom: 3rem">
     <p-card styleClass="flex: 1; text-align: center">
+      <div style="font-size: 0.9rem; color: gray; margin-bottom: 0.5rem">NOMBRE DE COURS</div>
       <div style="font-size: 3rem; font-weight: bold; color: #217b8a">{{ nombreCours() }}</div>
-      <div style="font-size: 1.1rem; margin-top: 0.5rem">Nombre de cours</div>
     </p-card>
     <p-card styleClass="flex: 1; text-align: center">
+      <div style="font-size: 0.9rem; color: gray; margin-bottom: 0.5rem">
+        MOYENNE D'ÉLÈVES PAR COURS
+      </div>
       <div style="font-size: 3rem; font-weight: bold; color: #217b8a">
         {{ moyennePresents() | number: '1.1-1' }}
       </div>
-      <div style="font-size: 1.1rem; margin-top: 0.5rem">Moyenne élèves présents par cours</div>
     </p-card>
   </div>
 
-  <!-- Élèves présents à un cours -->
-  <p-card header="Élèves présents à un cours" styleClass="margin-bottom: 2rem; display: block">
-    <div style="display: flex; gap: 1rem; align-items: flex-end">
+  <!-- Section 1 : Élèves présents à un cours -->
+  <p-card styleClass="margin-bottom: 2rem; display: block">
+    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem">
+      <i class="pi pi-users" style="font-size: 1.5rem; color: #217b8a"></i>
+      <h3 style="margin: 0">Qui était présent à un cours ?</h3>
+    </div>
+    <div style="display: flex; gap: 1rem; align-items: center">
       <p-floatlabel style="flex: 1">
         <p-select
           id="cours"
@@ -113,74 +134,83 @@
           optionValue="value"
           style="width: 100%"
         />
-        <label for="cours">Cours</label>
+        <label for="cours">Sélectionner un cours</label>
       </p-floatlabel>
       <p-button
-        label="Voir"
+        label="Voir les présences"
+        icon="pi pi-search"
         [style]="{ 'background-color': '#217b8a', border: 'none' }"
         (onClick)="voirElevesPresents()"
       />
     </div>
   </p-card>
 
-  <!-- Cours et compétitions par élève -->
-  <p-card header="Statistiques par élève" styleClass="margin-bottom: 2rem; display: block">
-    <div style="display: flex; flex-direction: column; gap: 1.5rem">
-      <div style="display: flex; gap: 1rem">
-        <p-floatlabel style="flex: 1">
-          <p-select
-            id="membre"
-            [options]="membres"
-            [(ngModel)]="membreIdSelectionne"
-            optionLabel="prenom"
-            optionValue="identifiant"
-            style="width: 100%"
-          />
-          <label for="membre">Membre</label>
-        </p-floatlabel>
-        <p-floatlabel style="flex: 1">
-          <p-datepicker
-            id="debut"
-            [(ngModel)]="dateDebut"
-            [inline]="false"
-            dateFormat="yy-mm-dd"
-            [appendTo]="'body'"
-            placeholder="Date début"
-            style="width: 100%"
-          />
-          <label for="debut">Date début</label>
-        </p-floatlabel>
-        <p-floatlabel style="flex: 1">
-          <p-datepicker
-            id="fin"
-            [(ngModel)]="dateFin"
-            [inline]="false"
-            dateFormat="yy-mm-dd"
-            [appendTo]="'body'"
-            placeholder="Date fin"
-            style="width: 100%"
-          />
-          <label for="fin">Date fin</label>
-        </p-floatlabel>
-      </div>
-      <div style="display: flex; gap: 1rem; justify-content: flex-end">
-        <p-button
-          label="Voir les cours"
-          [style]="{ 'background-color': '#217b8a', border: 'none' }"
-          (onClick)="voirCoursParEleve()"
+  <!-- Section 2 : Historique par élève -->
+  <p-card styleClass="margin-bottom: 2rem; display: block">
+    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem">
+      <i class="pi pi-user" style="font-size: 1.5rem; color: #217b8a"></i>
+      <h3 style="margin: 0">Historique d'un élève</h3>
+    </div>
+    <div style="display: flex; gap: 1rem; margin-bottom: 1rem">
+      <p-floatlabel style="flex: 1">
+        <p-select
+          id="membre"
+          [options]="membres"
+          [(ngModel)]="membreIdSelectionne"
+          optionLabel="nomUtilisateur"
+          optionValue="identifiant"
+          style="width: 100%"
         />
-        <p-button
-          label="Voir les compétitions"
-          [style]="{ 'background-color': '#6495ED', border: 'none' }"
-          (onClick)="voirCompetitionsParEleve()"
+        <label for="membre">Sélectionner un élève</label>
+      </p-floatlabel>
+      <p-floatlabel style="flex: 1">
+        <p-datepicker
+          id="debut"
+          [(ngModel)]="dateDebut"
+          [inline]="false"
+          dateFormat="yy-mm-dd"
+          [appendTo]="'body'"
+          placeholder="Date début (optionnel)"
+          style="width: 100%"
         />
-      </div>
+        <label for="debut">Date début</label>
+      </p-floatlabel>
+      <p-floatlabel style="flex: 1">
+        <p-datepicker
+          id="fin"
+          [(ngModel)]="dateFin"
+          [inline]="false"
+          dateFormat="yy-mm-dd"
+          [appendTo]="'body'"
+          placeholder="Date fin (optionnel)"
+          style="width: 100%"
+        />
+        <label for="fin">Date fin</label>
+      </p-floatlabel>
+    </div>
+    <div style="display: flex; gap: 1rem; justify-content: flex-end">
+      <p-button
+        label="Cours suivis"
+        icon="pi pi-book"
+        [style]="{ 'background-color': '#217b8a', border: 'none' }"
+        (onClick)="voirCoursParEleve()"
+      />
+      <p-button
+        label="Compétitions"
+        icon="pi pi-trophy"
+        [style]="{ 'background-color': '#6495ED', border: 'none' }"
+        (onClick)="voirCompetitionsParEleve()"
+      />
     </div>
   </p-card>
 
-  <!-- Compétitions par niveau -->
-  <p-card header="Nombre de compétitions par niveau" styleClass="display: block">
-    <div style="display: flex; gap: 1rem; align-items: flex-end">
+  <!-- Section 3 : Compétitions par niveau -->
+  <p-card styleClass="display: block">
+    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem">
+      <i class="pi pi-chart-bar" style="font-size: 1.5rem; color: #217b8a"></i>
+      <h3 style="margin: 0">Compétitions par niveau</h3>
+    </div>
+    <div style="display: flex; gap: 1rem; align-items: center">
       <p-floatlabel style="flex: 1">
         <p-select
           id="niveau"
@@ -190,15 +220,25 @@
           optionValue="value"
           style="width: 100%"
         />
-        <label for="niveau">Niveau</label>
+        <label for="niveau">Sélectionner un niveau</label>
       </p-floatlabel>
       <p-button
         label="Voir"
+        icon="pi pi-search"
         [style]="{ 'background-color': '#217b8a', border: 'none' }"
         (onClick)="voirCompetitionsParNiveau()"
       />
-      @if (nombreCompetitionsNiveau() > 0 || niveauSelectionne) {
-        <div style="font-size: 1.5rem; font-weight: bold; color: #217b8a">
+      @if (niveauSelectionne) {
+        <div
+          style="
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #217b8a;
+            background: rgba(33, 123, 138, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+          "
+        >
           {{ nombreCompetitionsNiveau() }} compétition(s)
         </div>
       }

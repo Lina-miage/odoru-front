@@ -10,10 +10,11 @@ import { TooltipModule } from 'primeng/tooltip';
     <p-button
       [icon]="icon"
       [rounded]="true"
-      [style]="{ 'background-color': couleur, border: 'none' }"
+      [disabled]="disabled"
+      [style]="{ 'background-color': disabled ? '#90949E' : couleur, border: 'none' }"
       [pTooltip]="tooltip"
       tooltipPosition="top"
-      (onClick)="clicked.emit()"
+      (onClick)="!disabled && clicked.emit()"
     />
   `,
 })
@@ -21,5 +22,7 @@ export class ActionButtonComponent {
   @Input() icon: string = '';
   @Input() couleur: string = '#217b8a';
   @Input() tooltip: string = '';
+  @Input() disabled: boolean = false;
+
   @Output() clicked = new EventEmitter<void>();
 }
