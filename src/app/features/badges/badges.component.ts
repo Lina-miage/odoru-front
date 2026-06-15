@@ -24,6 +24,7 @@ import { PageHeaderComponent } from '../shared/page-header/page-header.component
 import { FormButtonsComponent } from '../shared/form-buttons/form-buttons.component';
 import { ActionButtonComponent } from '../shared/action-button/action-button.component';
 import { DateFormatPipe } from '../../pipes/date-format.pipe';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-badges',
@@ -51,8 +52,6 @@ import { DateFormatPipe } from '../../pipes/date-format.pipe';
 })
 export class BadgesComponent implements OnInit {
   membres: Utilisateur[] = [];
-  secretaire: Utilisateur | null = null;
-  enseignants: Utilisateur[] = [];
   cours: Cours[] = [];
   badges: Badge[] = [];
   presences = signal<Presence[]>([]);
@@ -64,10 +63,7 @@ export class BadgesComponent implements OnInit {
   badgeADissocier = signal<Badge | null>(null);
 
   membreIdSelectionne: number | null = null;
-  secretaireIdSelectionne: number | null = null;
   coursIdSelectionne: number | null = null;
-  numeroBadge: string = '';
-  secretaireDissociationId: number | null = null;
   membreBadgerIdSelectionne: number | null = null;
 
   constructor(
@@ -76,20 +72,19 @@ export class BadgesComponent implements OnInit {
     private coursService: CoursService,
     private confirmationService: ConfirmationService,
     private notificationService: NotificationService,
+    public authService: AuthService,
   ) {}
 
   ngOnInit() {
     this.chargerUtilisateurs();
     this.chargerCours();
-    this.chargerBadges();
   }
 
   chargerUtilisateurs() {
-    this.utilisateurService.getAll().subscribe({
+    this.utilisateurService.getMembres().subscribe({
       next: (data) => {
-        this.membres = data.filter((u) => u.role === 'MEMBRE');
-        this.enseignants = data.filter((u) => u.role === 'ENSEIGNANT');
-        this.secretaire = data.find((u) => u.role === 'SECRETAIRE') ?? null;
+        this.membres = data;
+        this.chargerBadges();
       },
       error: (err) => this.notificationService.error(err),
     });
@@ -121,40 +116,16 @@ export class BadgesComponent implements OnInit {
       return;
     }
 
-    if (!this.secretaire) {
-      this.notificationService.warn('Aucune secrétaire trouvée dans le système');
-      return;
-    }
+    const secretaireId = this.authService.utilisateurConnecte()?.identifiant;
 
-    this.badgeService
-      .attribuerBadge(this.membreIdSelectionne, this.secretaire.identifiant!)
-      .subscribe({
-        next: () => {
-          this.chargerBadges();
-          this.showAttribuerDialog.set(false);
-          this.membreIdSelectionne = null;
-          this.notificationService.success('Badge attribué avec succès');
-        },
-        error: (err) => this.notificationService.error(err),
-      });
-  }
-
-  confirmerDissociation(badge: Badge) {
-    this.confirmationService.confirm({
-      message: `Êtes-vous sûr de vouloir dissocier le badge de ${badge.porteur?.prenom} ${badge.porteur?.nom} ?`,
-      header: 'Confirmation',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        this.badgeService
-          .dissocierBadge(badge.porteur!.identifiant!, this.secretaireIdSelectionne!)
-          .subscribe({
-            next: () => {
-              this.badges = this.badges.filter((b) => b.identifiant !== badge.identifiant);
-              this.notificationService.success('Badge dissocié avec succès');
-            },
-            error: (err) => this.notificationService.error(err),
-          });
+    this.badgeService.attribuerBadge(this.membreIdSelectionne, secretaireId!).subscribe({
+      next: () => {
+        this.chargerBadges();
+        this.showAttribuerDialog.set(false);
+        this.membreIdSelectionne = null;
+        this.notificationService.success('Badge attribué avec succès');
       },
+      error: (err) => this.notificationService.error(err),
     });
   }
 
@@ -200,18 +171,14 @@ export class BadgesComponent implements OnInit {
 
   ouvrirDissociation(badge: Badge) {
     this.badgeADissocier.set(badge);
-    this.secretaireDissociationId = null;
     this.showDissocierDialog.set(true);
   }
 
   dissocierBadge() {
-    if (!this.secretaireDissociationId) {
-      this.notificationService.warn('Veuillez sélectionner un secrétaire');
-      return;
-    }
+    const secretaireId = this.authService.utilisateurConnecte()?.identifiant;
 
     this.badgeService
-      .dissocierBadge(this.badgeADissocier()!.porteur!.identifiant!, this.secretaireDissociationId)
+      .dissocierBadge(this.badgeADissocier()!.porteur!.identifiant!, secretaireId!)
       .subscribe({
         next: () => {
           this.badges = this.badges.filter(
@@ -226,5 +193,15 @@ export class BadgesComponent implements OnInit {
 
   get aucunBadge(): boolean {
     return this.badges.length === 0;
+  }
+
+  get membresSansBadge(): Utilisateur[] {
+    return this.membres.filter(
+      (m) => !this.badges.find((b) => b.porteur?.identifiant === m.identifiant),
+    );
+  }
+
+  get tousLesMembresOntUnBadge(): boolean {
+    return this.membres.length > 0 && this.membresSansBadge.length === 0;
   }
 }

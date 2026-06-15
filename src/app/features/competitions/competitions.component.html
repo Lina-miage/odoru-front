@@ -3,8 +3,10 @@
   <p-confirmdialog />
 
   <app-creneau-dialog
-    [visible]="showCreneauDialog()"
-    (visibleChange)="showCreneauDialog.set($event)"
+    [visible]="showCreneauxDialog()"
+    (visibleChange)="showCreneauxDialog.set($event)"
+    [creneaux]="creneaux"
+    [associations]="creneauxAssociations"
     (confirmer)="creerCreneau($event)"
   />
 
@@ -40,28 +42,20 @@
     [modal]="true"
     [style]="{ width: '400px' }"
   >
-    <div style="display: flex; flex-direction: column; gap: 1.5rem; padding: 1rem">
+    <div
+      style="display: flex; flex-direction: column; gap: 1.5rem; padding: 1rem; padding-top: 1.5rem"
+    >
       <p-floatlabel>
         <p-select
           id="eleve"
           [options]="membres"
           [(ngModel)]="eleveId"
-          optionLabel="prenom"
+          optionLabel="nomUtilisateur"
           optionValue="identifiant"
+          [appendTo]="'body'"
           style="width: 100%"
         />
-        <label for="eleve">Élève</label>
-      </p-floatlabel>
-      <p-floatlabel>
-        <p-select
-          id="enseignantResultat"
-          [options]="enseignants"
-          [(ngModel)]="enseignantResultatId"
-          optionLabel="prenom"
-          optionValue="identifiant"
-          style="width: 100%"
-        />
-        <label for="enseignantResultat">Enseignant</label>
+        <label for="eleve">Élève <span style="color: rgb(148, 78, 78)">*</span></label>
       </p-floatlabel>
       <p-floatlabel>
         <p-inputnumber
@@ -72,7 +66,7 @@
           [maxFractionDigits]="1"
           style="width: 100%"
         />
-        <label for="note">Note (0-10)</label>
+        <label for="note">Note (0-10) <span style="color: rgb(148, 78, 78)">*</span></label>
       </p-floatlabel>
       <app-form-buttons
         labelConfirmer="Enregistrer"
@@ -85,28 +79,30 @@
 
   @if (!showForm()) {
     <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-bottom: 1rem">
-      <p-button
-        icon="pi pi-clock"
-        [rounded]="true"
-        [style]="{ 'background-color': '#217b8a', border: 'none' }"
-        pTooltip="Gérer les créneaux"
-        tooltipPosition="bottom"
-        (onClick)="showCreneauDialog.set(true)"
-      />
-      <p-button
-        label="Créer une compétition"
-        [disabled]="aucunCreneau"
-        [pTooltip]="aucunCreneau ? 'Aucun créneau disponible' : ''"
-        tooltipPosition="bottom"
-        [style]="{ 'background-color': aucunCreneau ? '#90949E' : '#217b8a', border: 'none' }"
-        (onClick)="showForm.set(true)"
-      />
+      @if (authService.getRole() === 'ENSEIGNANT' || authService.getRole() === 'PRESIDENT') {
+        <p-button
+          icon="pi pi-clock"
+          [rounded]="true"
+          [style]="{ 'background-color': '#217b8a', border: 'none' }"
+          pTooltip="Gérer les créneaux"
+          tooltipPosition="bottom"
+          (onClick)="showCreneauxDialog.set(true)"
+        />
+        <p-button
+          label="Créer une compétition"
+          [disabled]="aucunCreneau"
+          [pTooltip]="aucunCreneau ? 'Aucun créneau disponible' : ''"
+          tooltipPosition="bottom"
+          [style]="{ 'background-color': aucunCreneau ? '#90949E' : '#217b8a', border: 'none' }"
+          (onClick)="showForm.set(true)"
+        />
+      }
     </div>
   }
 
   @if (showForm()) {
     <p-card header="Créer une compétition" styleClass="margin-bottom: 2rem; display: block">
-      <div style="display: flex; flex-direction: column; gap: 1.5rem">
+      <div style="display: flex; flex-direction: column; gap: 1.5rem; padding-top: 1rem">
         <div style="display: flex; gap: 1.5rem">
           <p-floatlabel style="flex: 1">
             <input
@@ -115,7 +111,7 @@
               [(ngModel)]="nouvelleCompetition.titre"
               style="width: 100%"
             />
-            <label for="titre">Titre</label>
+            <label for="titre">Titre<span style="color: rgb(148, 78, 78)">*</span></label>
           </p-floatlabel>
           <p-floatlabel style="flex: 1">
             <input
@@ -124,7 +120,7 @@
               [(ngModel)]="nouvelleCompetition.lieu"
               style="width: 100%"
             />
-            <label for="lieu">Lieu</label>
+            <label for="lieu">Lieu<span style="color: rgb(148, 78, 78)">*</span></label>
           </p-floatlabel>
         </div>
         <div style="display: flex; gap: 1.5rem">
@@ -138,7 +134,7 @@
               optionValue="value"
               style="width: 100%"
             />
-            <label for="niveau">Niveau cible</label>
+            <label for="niveau">Niveau cible<span style="color: rgb(148, 78, 78)">*</span></label>
           </p-floatlabel>
           <p-floatlabel style="flex: 1">
             <p-inputnumber
@@ -147,7 +143,7 @@
               [min]="1"
               style="width: 100%"
             />
-            <label for="duree">Durée (minutes)</label>
+            <label for="duree">Durée (minutes)<span style="color: rgb(148, 78, 78)">*</span></label>
           </p-floatlabel>
           <p-floatlabel style="flex: 1">
             <p-select
@@ -161,7 +157,7 @@
               tooltipPosition="top"
               style="width: 100%"
             />
-            <label for="enseignant">Enseignant</label>
+            <label for="enseignant">Enseignant<span style="color: rgb(148, 78, 78)">*</span></label>
           </p-floatlabel>
         </div>
         <div style="display: flex; gap: 1.5rem">
@@ -174,7 +170,7 @@
               optionValue="value"
               style="width: 100%"
             />
-            <label for="creneau">Créneau</label>
+            <label for="creneau">Créneau<span style="color: rgb(148, 78, 78)">*</span></label>
           </p-floatlabel>
         </div>
         <app-form-buttons
@@ -242,22 +238,27 @@
           <td style="display: flex; gap: 0.5rem">
             <app-action-button
               icon="pi pi-list"
-              couleur="#6495ED"
-              tooltip="Voir les résultats"
+              [couleur]="(competition.resultats?.length ?? 0) > 0 ? '#6495ED' : '#90949E'"
+              [tooltip]="
+                (competition.resultats?.length ?? 0) > 0 ? 'Voir les résultats' : 'Aucun résultat'
+              "
+              [disabled]="(competition.resultats?.length ?? 0) === 0"
               (clicked)="voirResultats(competition)"
             />
-            <app-action-button
-              icon="pi pi-plus"
-              couleur="#90949E"
-              tooltip="Enregistrer un résultat"
-              (clicked)="ouvrirEnregistrerResultat(competition)"
-            />
-            <app-action-button
-              icon="pi pi-trash"
-              couleur="#8F4A3F"
-              tooltip="Supprimer"
-              (clicked)="confirmerSuppression(competition)"
-            />
+            @if (authService.getRole() === 'ENSEIGNANT' || authService.getRole() === 'PRESIDENT') {
+              <app-action-button
+                icon="pi pi-plus"
+                couleur="#90949E"
+                tooltip="Enregistrer un résultat"
+                (clicked)="ouvrirEnregistrerResultat(competition)"
+              />
+              <app-action-button
+                icon="pi pi-trash"
+                couleur="#8F4A3F"
+                tooltip="Supprimer"
+                (clicked)="confirmerSuppression(competition)"
+              />
+            }
           </td>
         </tr>
       </ng-template>

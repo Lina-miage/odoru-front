@@ -2,84 +2,11 @@
   <p-toast />
   <p-confirmdialog />
 
-  <p-dialog
-    header="Créneaux disponibles"
+  <app-creneau-dialog
     [visible]="showCreneauxDialog()"
     (visibleChange)="showCreneauxDialog.set($event)"
-    [modal]="true"
-    [style]="{ width: '600px' }"
-  >
-    <p-table [value]="creneaux">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>Jour</th>
-          <th>Date</th>
-          <th>Heure</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-creneau>
-        <tr>
-          <td>{{ creneau.jourSemaine }}</td>
-          <td>{{ creneau.date }}</td>
-          <td>{{ creneau.heureDebut }}</td>
-        </tr>
-      </ng-template>
-    </p-table>
-    <ng-template pTemplate="footer">
-      <div
-        style="
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          width: 100%;
-          gap: 1rem;
-        "
-      >
-        <p-button
-          label="Voir tous les créneaux"
-          [style]="{ 'background-color': '#217b8a', border: 'none' }"
-          (onClick)="showCreneauxDialog.set(false); showTousCreneaux.set(true)"
-        />
-        <p-button
-          label="Créer un créneau"
-          [style]="{ 'background-color': '#217b8a', border: 'none' }"
-          (onClick)="showCreneauxDialog.set(false); showCreneauDialog.set(true)"
-        />
-      </div>
-    </ng-template>
-  </p-dialog>
-
-  <p-dialog
-    header="Tous les créneaux"
-    [visible]="showTousCreneaux()"
-    (visibleChange)="showTousCreneaux.set($event); showCreneauxDialog.set(!$event)"
-    [modal]="true"
-    [style]="{ width: '800px' }"
-  >
-    <p-table [value]="creneaux">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>Jour</th>
-          <th>Date</th>
-          <th>Heure</th>
-          <th>Cours associé</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-creneau>
-        <tr>
-          <td>{{ creneau.jourSemaine }}</td>
-          <td>{{ creneau.date }}</td>
-          <td>{{ creneau.heureDebut }}</td>
-          <td>{{ getCoursParCreneau(creneau.id) }}</td>
-        </tr>
-      </ng-template>
-    </p-table>
-    <ng-template pTemplate="footer"> </ng-template>
-  </p-dialog>
-
-  <app-creneau-dialog
-    [visible]="showCreneauDialog()"
-    (visibleChange)="showCreneauDialog.set($event)"
+    [creneaux]="creneaux"
+    [associations]="creneauxAssociations"
     (confirmer)="creerCreneau($event)"
   />
 
@@ -110,36 +37,38 @@
 
   @if (!showForm()) {
     <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-bottom: 1rem">
-      <p-button
-        icon="pi pi-clock"
-        [rounded]="true"
-        [style]="{ 'background-color': '#217b8a', border: 'none' }"
-        pTooltip="Gérer les créneaux"
-        tooltipPosition="bottom"
-        (onClick)="showCreneauxDialog.set(true)"
-      />
-      <p-button
-        label="Créer un cours"
-        [disabled]="aucunCreneau"
-        [pTooltip]="aucunCreneau ? 'Aucun créneau disponible' : ''"
-        tooltipPosition="bottom"
-        [style]="{ 'background-color': aucunCreneau ? '#90949E' : '#217b8a', border: 'none' }"
-        (onClick)="showForm.set(true)"
-      />
+      @if (authService.getRole() === 'ENSEIGNANT' || authService.getRole() === 'PRESIDENT') {
+        <p-button
+          icon="pi pi-clock"
+          [rounded]="true"
+          [style]="{ 'background-color': '#217b8a', border: 'none' }"
+          pTooltip="Gérer les créneaux"
+          tooltipPosition="bottom"
+          (onClick)="showCreneauxDialog.set(true)"
+        />
+        <p-button
+          label="Créer un cours"
+          [disabled]="aucunCreneau"
+          [pTooltip]="aucunCreneau ? 'Aucun créneau disponible' : ''"
+          tooltipPosition="bottom"
+          [style]="{ 'background-color': aucunCreneau ? '#90949E' : '#217b8a', border: 'none' }"
+          (onClick)="showForm.set(true)"
+        />
+      }
     </div>
   }
 
   @if (showForm()) {
     <p-card header="Créer un cours" styleClass="margin-bottom: 2rem; display: block">
-      <div style="display: flex; flex-direction: column; gap: 1.5rem">
+      <div style="display: flex; flex-direction: column; gap: 1.5rem; padding-top: 1rem">
         <div style="display: flex; gap: 1.5rem">
           <p-floatlabel style="flex: 1">
             <input pInputText id="titre" [(ngModel)]="nouveauCours.titre" style="width: 100%" />
-            <label for="titre">Titre</label>
+            <label for="titre">Titre <span style="color: rgb(148, 78, 78)">*</span></label>
           </p-floatlabel>
           <p-floatlabel style="flex: 1">
             <input pInputText id="lieu" [(ngModel)]="nouveauCours.lieu" style="width: 100%" />
-            <label for="lieu">Lieu</label>
+            <label for="lieu">Lieu <span style="color: rgb(148, 78, 78)">*</span></label>
           </p-floatlabel>
         </div>
         <div style="display: flex; gap: 1.5rem">
@@ -153,7 +82,7 @@
               optionValue="value"
               style="width: 100%"
             />
-            <label for="niveau">Niveau cible</label>
+            <label for="niveau">Niveau cible <span style="color: rgb(148, 78, 78)">*</span></label>
           </p-floatlabel>
           <p-floatlabel style="flex: 1">
             <p-inputnumber
@@ -162,7 +91,9 @@
               [min]="1"
               style="width: 100%"
             />
-            <label for="duree">Durée (minutes)</label>
+            <label for="duree"
+              >Durée (minutes) <span style="color: rgb(148, 78, 78)">*</span></label
+            >
           </p-floatlabel>
         </div>
         <div style="display: flex; gap: 1.5rem">
@@ -178,7 +109,9 @@
               tooltipPosition="top"
               style="width: 100%"
             />
-            <label for="enseignant">Enseignant</label>
+            <label for="enseignant"
+              >Enseignant <span style="color: rgb(148, 78, 78)">*</span></label
+            >
           </p-floatlabel>
           <p-floatlabel style="flex: 1">
             <p-select
@@ -189,43 +122,45 @@
               optionValue="value"
               style="width: 100%"
             />
-            <label for="creneau">Créneau</label>
+            <label for="creneau">Créneau <span style="color: rgb(148, 78, 78)">*</span></label>
           </p-floatlabel>
         </div>
-        <div style="display: flex; justify-content: flex-end; gap: 1rem">
-          <app-form-buttons
-            labelConfirmer="Créer"
-            (annuler)="showForm.set(false)"
-            (confirmer)="creerCours()"
-          />
-        </div>
+        <app-form-buttons
+          labelConfirmer="Créer"
+          (annuler)="showForm.set(false)"
+          (confirmer)="creerCours()"
+        />
       </div>
     </p-card>
   }
+
   <div style="margin-top: 4rem">
     <app-page-header titre="Cours planifiés">
-      <p-select
-        [options]="niveaux"
-        [ngModel]="filtreNiveau()"
-        (ngModelChange)="filtreNiveau.set($event)"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Filtrer par niveau"
-        [showClear]="true"
-        style="width: 200px"
-      />
-      <p-select
-        [options]="enseignants"
-        [ngModel]="filtreEnseignantId()"
-        (ngModelChange)="filtreEnseignantId.set($event)"
-        optionLabel="prenom"
-        optionValue="identifiant"
-        placeholder="Filtrer par enseignant"
-        [showClear]="true"
-        style="width: 200px"
-      />
+      @if (authService.getRole() !== 'MEMBRE') {
+        <p-select
+          [options]="niveaux"
+          [ngModel]="filtreNiveau()"
+          (ngModelChange)="filtreNiveau.set($event)"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Filtrer par niveau"
+          [showClear]="true"
+          style="width: 200px"
+        />
+        <p-select
+          [options]="enseignants"
+          [ngModel]="filtreEnseignantId()"
+          (ngModelChange)="filtreEnseignantId.set($event)"
+          optionLabel="prenom"
+          optionValue="identifiant"
+          placeholder="Filtrer par enseignant"
+          [showClear]="true"
+          style="width: 200px"
+        />
+      }
     </app-page-header>
   </div>
+
   <p-table [value]="coursFiltres()" [paginator]="true" [rows]="10" dataKey="identifiant">
     <ng-template pTemplate="header">
       <tr>
@@ -236,7 +171,13 @@
         <th>Enseignant</th>
         <th>Créneau</th>
         <th>Inscrits</th>
-        <th>Actions</th>
+        <th>
+          @if (authService.getRole() === 'MEMBRE') {
+            Présence
+          } @else {
+            Actions
+          }
+        </th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-unCours>
@@ -254,19 +195,43 @@
           </strong>
         </td>
         <td>{{ unCours.inscrits?.length ?? 0 }}</td>
-        <td style="display: flex; gap: 0.5rem">
-          <app-action-button
-            icon="pi pi-users"
-            couleur="#6495ED"
-            tooltip="Voir les inscrits"
-            (clicked)="voirInscrits(unCours)"
-          />
-          <app-action-button
-            icon="pi pi-trash"
-            couleur="#8F4A3F"
-            tooltip="Supprimer"
-            (clicked)="confirmerSuppression(unCours)"
-          />
+        <td style="display: flex; gap: 0.5rem; align-items: center">
+          @if (authService.getRole() === 'MEMBRE') {
+            @if (aBadgePourCours(unCours.identifiant!)) {
+              <span style="color: #4caf50; font-weight: bold">✓ Présent</span>
+            } @else {
+              <app-action-button
+                icon="pi pi-check"
+                couleur="#217b8a"
+                tooltip="Badger à ce cours"
+                (clicked)="badgerCours(unCours)"
+              />
+            }
+          } @else {
+            @if (
+              authService.getRole() === 'SECRETAIRE' ||
+              authService.getRole() === 'ENSEIGNANT' ||
+              authService.getRole() === 'PRESIDENT'
+            ) {
+              <app-action-button
+                icon="pi pi-users"
+                [couleur]="(unCours.inscrits?.length ?? 0) > 0 ? '#6495ED' : '#90949E'"
+                [tooltip]="
+                  (unCours.inscrits?.length ?? 0) > 0 ? 'Voir les inscrits' : 'Aucun inscrit'
+                "
+                [disabled]="(unCours.inscrits?.length ?? 0) === 0"
+                (clicked)="voirInscrits(unCours)"
+              />
+            }
+            @if (authService.getRole() === 'ENSEIGNANT' || authService.getRole() === 'PRESIDENT') {
+              <app-action-button
+                icon="pi pi-trash"
+                couleur="#8F4A3F"
+                tooltip="Supprimer"
+                (clicked)="confirmerSuppression(unCours)"
+              />
+            }
+          }
         </td>
       </tr>
     </ng-template>

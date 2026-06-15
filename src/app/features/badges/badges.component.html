@@ -10,14 +10,17 @@
     [modal]="true"
     [style]="{ width: '400px' }"
   >
-    <div style="display: flex; flex-direction: column; gap: 1.5rem; padding: 1rem">
+    <div
+      style="display: flex; flex-direction: column; gap: 1.5rem; padding: 1rem; padding-top: 1.5rem"
+    >
       <p-floatlabel>
         <p-select
           id="membre"
-          [options]="membres"
+          [options]="membresSansBadge"
           [(ngModel)]="membreIdSelectionne"
           optionLabel="nomUtilisateur"
           optionValue="identifiant"
+          [appendTo]="'body'"
           style="width: 100%"
         />
         <label for="membre">Membre</label>
@@ -118,18 +121,15 @@
 
   <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-bottom: 1rem">
     <p-button
-      label="Badger"
-      icon="pi pi-check"
-      [disabled]="aucunBadge"
-      [pTooltip]="aucunBadge ? 'Aucun badge n\'a été attribué' : ''"
-      tooltipPosition="bottom"
-      [style]="{ 'background-color': aucunBadge ? '#90949E' : '#217b8a', border: 'none' }"
-      (onClick)="showBadgerDialog.set(true)"
-    />
-    <p-button
       label="Attribuer un badge"
       icon="pi pi-plus"
-      [style]="{ 'background-color': '#217b8a', border: 'none' }"
+      [disabled]="tousLesMembresOntUnBadge"
+      [pTooltip]="tousLesMembresOntUnBadge ? 'Tous les membres ont déjà un badge' : ''"
+      tooltipPosition="bottom"
+      [style]="{
+        'background-color': tousLesMembresOntUnBadge ? '#90949E' : '#217b8a',
+        border: 'none',
+      }"
       (onClick)="showAttribuerDialog.set(true)"
     />
   </div>

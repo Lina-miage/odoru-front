@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, computed, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UtilisateurService } from '../../services/utilisateur.service';
@@ -47,11 +47,11 @@ import { ActionButtonComponent } from '../shared/action-button/action-button.com
   templateUrl: './membres.component.html',
 })
 export class MembreComponent implements OnInit {
-  membres: Utilisateur[] = [];
-  showForm = signal(false);
+  membres = signal<Utilisateur[]>([]);
   showNiveauDialog = signal(false);
   membreSelectionne = signal<Utilisateur | null>(null);
   niveauSelectionne = signal<number>(1);
+  recherche = signal<string>('');
 
   niveaux = [
     { label: 'Niveau 1', value: 1 },
@@ -60,16 +60,6 @@ export class MembreComponent implements OnInit {
     { label: 'Niveau 4', value: 4 },
     { label: 'Niveau 5', value: 5 },
   ];
-
-  nouveauMembre: Utilisateur = {
-    nom: '',
-    prenom: '',
-    courriel: '',
-    nomUtilisateur: '',
-    motDePasse: '',
-    niveauExpertise: 1,
-    adresse: { ville: '', pays: '' },
-  };
 
   constructor(
     private utilisateurService: UtilisateurService,
@@ -83,27 +73,7 @@ export class MembreComponent implements OnInit {
 
   chargerMembres() {
     this.utilisateurService.getAll().subscribe({
-      next: (data) => (this.membres = data),
-      error: (err) => this.notificationService.error(err),
-    });
-  }
-
-  inscrire() {
-    this.utilisateurService.inscrire(this.nouveauMembre).subscribe({
-      next: () => {
-        this.chargerMembres();
-        this.showForm.set(false);
-        this.nouveauMembre = {
-          nom: '',
-          prenom: '',
-          courriel: '',
-          nomUtilisateur: '',
-          motDePasse: '',
-          niveauExpertise: 1,
-          adresse: { ville: '', pays: '' },
-        };
-        this.notificationService.success('Membre inscrit avec succès');
-      },
+      next: (data) => this.membres.set(data),
       error: (err) => this.notificationService.error(err),
     });
   }
@@ -169,4 +139,15 @@ export class MembreComponent implements OnInit {
     this.niveauSelectionne.set(membre.niveauExpertise);
     this.showNiveauDialog.set(true);
   }
+
+  membresFiltres = computed(() => {
+    const terme = this.recherche().toLowerCase().trim();
+    if (!terme) return this.membres();
+    return this.membres().filter(
+      (m) =>
+        m.nom.toLowerCase().includes(terme) ||
+        m.prenom.toLowerCase().includes(terme) ||
+        m.nomUtilisateur.toLowerCase().includes(terme),
+    );
+  });
 }

@@ -27,6 +27,7 @@ import { ActionButtonComponent } from '../shared/action-button/action-button.com
 import { CoursService } from '../../services/cours.service';
 import { CreneauDialogComponent } from '../shared/creneau-dialog/creneau-dialog.component';
 import { CreneauService } from '../../services/creneau.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-competitions',
@@ -63,7 +64,7 @@ export class CompetitionsComponent implements OnInit {
   dateMin: Date = new Date();
 
   showForm = signal(false);
-  showCreneauDialog = signal(false);
+  showCreneauxDialog = signal(false);
   showResultatsDialog = signal(false);
   competitionSelectionnee = signal<Competition | null>(null);
   resultats = signal<Resultat[]>([]);
@@ -99,6 +100,7 @@ export class CompetitionsComponent implements OnInit {
     private confirmationService: ConfirmationService,
     private notificationService: NotificationService,
     public creneauService: CreneauService,
+    public authService: AuthService,
   ) {}
 
   ngOnInit() {
@@ -127,15 +129,15 @@ export class CompetitionsComponent implements OnInit {
   }
 
   chargerEnseignants() {
-    this.utilisateurService.getAll().subscribe({
-      next: (data) => (this.enseignants = data.filter((u) => u.role === 'ENSEIGNANT')),
+    this.utilisateurService.getEnseignants().subscribe({
+      next: (data) => (this.enseignants = data),
       error: (err) => this.notificationService.error(err),
     });
   }
 
   chargerMembres() {
-    this.utilisateurService.getAll().subscribe({
-      next: (data) => (this.membres = data.filter((u) => u.role === 'MEMBRE')),
+    this.utilisateurService.getMembres().subscribe({
+      next: (data) => (this.membres = data),
       error: (err) => this.notificationService.error(err),
     });
   }
@@ -151,7 +153,6 @@ export class CompetitionsComponent implements OnInit {
     this.coursService.creerCreneau(creneauFormate).subscribe({
       next: () => {
         this.chargerCreneaux();
-        this.showCreneauDialog.set(false);
         this.notificationService.success('Créneau créé avec succès');
       },
       error: (err) => this.notificationService.error(err),
@@ -160,7 +161,7 @@ export class CompetitionsComponent implements OnInit {
 
   creerCompetition() {
     if (!this.enseignantId || !this.creneauSelectionne || !this.nouvelleCompetition.niveauCible) {
-      this.notificationService.warn('Veuillez remplir tous les champs obligatoires');
+      this.notificationService.warn('Veuillez remplir tous les champs');
       return;
     }
 
@@ -220,8 +221,8 @@ export class CompetitionsComponent implements OnInit {
   }
 
   enregistrerResultat() {
-    if (!this.eleveId || !this.enseignantResultatId) {
-      this.notificationService.warn('Veuillez remplir tous les champs');
+    if (!this.eleveId) {
+      this.notificationService.warn('Veuillez sélectionner un élève');
       return;
     }
 
@@ -230,6 +231,7 @@ export class CompetitionsComponent implements OnInit {
       return;
     }
 
+    const enseignantId = this.authService.utilisateurConnecte()?.identifiant;
     const resultat: Resultat = { note: this.nouvelleNote };
 
     this.competitionService
@@ -237,13 +239,13 @@ export class CompetitionsComponent implements OnInit {
         resultat,
         this.eleveId,
         this.competitionSelectionnee()!.identifiant!,
-        this.enseignantResultatId,
+        enseignantId!,
       )
       .subscribe({
         next: () => {
+          this.chargerCompetitions();
           this.showEnregistrerResultatDialog.set(false);
           this.eleveId = null;
-          this.enseignantResultatId = null;
           this.nouvelleNote = 0;
           this.notificationService.success('Résultat enregistré avec succès');
         },
@@ -280,4 +282,16 @@ export class CompetitionsComponent implements OnInit {
       return matchNiveau && matchEnseignant;
     });
   });
+
+  getCompetitionParCreneau(creneauId: number): string {
+    const comp = this.competitions().find((c) => c.creneau?.id === creneauId);
+    return comp ? comp.titre : 'Aucune compétition';
+  }
+
+  get creneauxAssociations() {
+    return this.creneaux.map((c) => ({
+      creneauId: c.id!,
+      titre: this.getCompetitionParCreneau(c.id!),
+    }));
+  }
 }
