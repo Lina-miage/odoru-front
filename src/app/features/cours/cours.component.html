@@ -5,8 +5,8 @@
   <app-creneau-dialog
     [visible]="showCreneauxDialog()"
     (visibleChange)="showCreneauxDialog.set($event)"
-    [creneaux]="creneaux"
-    [associations]="creneauxAssociations"
+    [creneaux]="creneaux()"
+    [associations]="creneauxAssociations()"
     (confirmer)="creerCreneau($event)"
   />
 

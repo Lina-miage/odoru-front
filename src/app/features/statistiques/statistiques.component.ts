@@ -14,7 +14,6 @@ import { Select } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { DialogModule } from 'primeng/dialog';
 import { FloatLabel } from 'primeng/floatlabel';
-import { MessageService } from 'primeng/api';
 import { DatePicker } from 'primeng/datepicker';
 import { PageHeaderComponent } from '../shared/page-header/page-header.component';
 import { DateFormatPipe } from '../../pipes/date-format.pipe';
@@ -38,7 +37,6 @@ import { TooltipModule } from 'primeng/tooltip';
     DateFormatPipe,
     TooltipModule,
   ],
-  providers: [MessageService],
   templateUrl: './statistiques.component.html',
 })
 export class StatistiquesComponent implements OnInit {
@@ -89,7 +87,7 @@ export class StatistiquesComponent implements OnInit {
   }
 
   chargerMembres() {
-    this.utilisateurService.getAll().subscribe({
+    this.utilisateurService.getMembres().subscribe({
       next: (data) => (this.membres = data.filter((u) => u.role === 'MEMBRE')),
       error: (err) => this.notificationService.error(err),
     });
@@ -136,17 +134,6 @@ export class StatistiquesComponent implements OnInit {
         },
         error: (err) => this.notificationService.error(err),
       });
-  }
-
-  voirCompetitionsParNiveau() {
-    if (!this.niveauSelectionne) {
-      this.notificationService.warn('Veuillez sélectionner un niveau');
-      return;
-    }
-    this.statistiqueService.getNombreCompetitionsParNiveau(this.niveauSelectionne).subscribe({
-      next: (data) => this.nombreCompetitionsNiveau.set(data),
-      error: (err) => this.notificationService.error(err),
-    });
   }
 
   private formaterDate(date: Date): string {

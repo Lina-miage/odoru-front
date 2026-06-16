@@ -15,7 +15,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DialogModule } from 'primeng/dialog';
 import { Select } from 'primeng/select';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { ConfirmationService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { PageHeaderComponent } from '../shared/page-header/page-header.component';
 import { FormButtonsComponent } from '../shared/form-buttons/form-buttons.component';
@@ -43,7 +43,7 @@ import { ActionButtonComponent } from '../shared/action-button/action-button.com
     FormButtonsComponent,
     ActionButtonComponent,
   ],
-  providers: [ConfirmationService, MessageService],
+  providers: [ConfirmationService],
   templateUrl: './membres.component.html',
 })
 export class MembreComponent implements OnInit {

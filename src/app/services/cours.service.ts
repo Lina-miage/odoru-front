@@ -17,18 +17,6 @@ export class CoursService {
     return this.http.get<Cours[]>(this.apiUrl);
   }
 
-  getById(id: number): Observable<Cours> {
-    return this.http.get<Cours>(`${this.apiUrl}/${id}`);
-  }
-
-  getByNiveau(niveau: number): Observable<Cours[]> {
-    return this.http.get<Cours[]>(`${this.apiUrl}/niveau?niveau=${niveau}`);
-  }
-
-  getByEnseignant(enseignantId: number): Observable<Cours[]> {
-    return this.http.get<Cours[]>(`${this.apiUrl}/enseignant/${enseignantId}`);
-  }
-
   creerCours(cours: Cours, enseignantId: number): Observable<Cours> {
     return this.http.post<Cours>(`${this.apiUrl}?enseignantId=${enseignantId}`, cours);
   }
@@ -37,16 +25,11 @@ export class CoursService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  // Créneaux
   getAllCreneaux(): Observable<Creneau[]> {
     return this.http.get<Creneau[]>(this.creneauUrl);
   }
 
   creerCreneau(creneau: Creneau): Observable<Creneau> {
     return this.http.post<Creneau>(this.creneauUrl, creneau);
-  }
-
-  supprimerCreneau(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.creneauUrl}/${id}`);
   }
 }
