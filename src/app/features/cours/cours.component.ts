@@ -56,31 +56,20 @@ import { BadgeService } from '../../services/badge.service';
 })
 export class CoursComponent implements OnInit {
   cours = signal<Cours[]>([]);
-  creneaux: Creneau[] = [];
+  creneaux = signal<Creneau[]>([]);
   enseignants: Utilisateur[] = [];
   enseignantId: number | null = null;
   creneauSelectionne: number | null = null;
-  dateMin: Date = new Date();
 
   showForm = signal(false);
-  showCreneauDialog = signal(false);
   showCreneauxDialog = signal(false);
   coursSelectionne = signal<Cours | null>(null);
   showInscritsDialog = signal(false);
-  showBadgerDialog = signal(false);
   filtreNiveau = signal<number | null>(null);
   filtreEnseignantId = signal<number | null>(null);
   aBadge = signal(false);
   aDejaAllBadge = signal(false);
   presencesMembre = signal<any[]>([]);
-
-  coursIdBadger: number | null = null;
-
-  nouveauCreneau: any = {
-    jourSemaine: '',
-    heureDebut: null,
-    date: null,
-  };
 
   nouveauCours: Cours = {
     titre: '',
@@ -112,7 +101,7 @@ export class CoursComponent implements OnInit {
   }
 
   get aucunCreneau(): boolean {
-    return this.creneaux.length === 0;
+    return this.creneaux().length === 0;
   }
 
   chargerCours() {
@@ -124,7 +113,7 @@ export class CoursComponent implements OnInit {
 
   chargerCreneaux() {
     this.coursService.getAllCreneaux().subscribe({
-      next: (data) => (this.creneaux = data),
+      next: (data) => this.creneaux.set(data),
       error: (err) => this.notificationService.error(err),
     });
   }
@@ -147,7 +136,7 @@ export class CoursComponent implements OnInit {
     this.coursService.creerCreneau(creneauFormate).subscribe({
       next: () => {
         this.chargerCreneaux();
-        this.showCreneauDialog.set(false);
+        this.showCreneauxDialog.set(false);
         this.notificationService.success('Créneau créé avec succès');
       },
       error: (err) => this.notificationService.error(err),
@@ -205,18 +194,8 @@ export class CoursComponent implements OnInit {
     });
   }
 
-  getCoursParCreneau(creneauId: number): string {
-    const coursAssocie = this.cours().find((c) => c.creneau?.id === creneauId);
-    return coursAssocie ? coursAssocie.titre : 'Aucun cours';
-  }
-
-  fermerCreerCreneau() {
-    this.showCreneauDialog.set(false);
-    this.showCreneauxDialog.set(true);
-  }
-
   get creneauxOptions() {
-    return this.creneaux.map((c) => ({
+    return this.creneaux().map((c) => ({
       label: `${c.jourSemaine} ${c.date} à ${c.heureDebut}`,
       value: c.id,
     }));
@@ -315,10 +294,15 @@ export class CoursComponent implements OnInit {
     });
   }
 
-  get creneauxAssociations() {
-    return this.creneaux.map((c) => ({
+  getCoursParCreneau(creneauId: number): string {
+    const coursAssocie = this.cours().find((c) => c.creneau?.id === creneauId);
+    return coursAssocie ? coursAssocie.titre : 'Aucun cours';
+  }
+
+  creneauxAssociations = computed(() => {
+    return this.creneaux().map((c) => ({
       creneauId: c.id!,
       titre: this.getCoursParCreneau(c.id!),
     }));
-  }
+  });
 }

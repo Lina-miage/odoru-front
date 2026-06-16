@@ -15,10 +15,6 @@ export class UtilisateurService {
     return this.http.get<Utilisateur[]>(this.apiUrl);
   }
 
-  getById(id: number): Observable<Utilisateur> {
-    return this.http.get<Utilisateur>(`${this.apiUrl}/${id}`);
-  }
-
   inscrire(utilisateur: Utilisateur): Observable<Utilisateur> {
     return this.http.post<Utilisateur>(`${this.apiUrl}/inscription`, utilisateur);
   }

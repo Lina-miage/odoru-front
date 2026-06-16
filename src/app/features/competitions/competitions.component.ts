@@ -56,27 +56,25 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './competitions.component.html',
 })
 export class CompetitionsComponent implements OnInit {
+  membres = signal<Utilisateur[]>([]);
   competitions = signal<Competition[]>([]);
-  creneaux: Creneau[] = [];
-  enseignants: Utilisateur[] = [];
-  enseignantId: number | null = null;
-  creneauSelectionne: number | null = null;
-  dateMin: Date = new Date();
-
   showForm = signal(false);
   showCreneauxDialog = signal(false);
   showResultatsDialog = signal(false);
   competitionSelectionnee = signal<Competition | null>(null);
   resultats = signal<Resultat[]>([]);
+  filtreNiveau = signal<number | null>(null);
+  filtreEnseignantId = signal<number | null>(null);
 
+  creneaux: Creneau[] = [];
+  enseignants: Utilisateur[] = [];
+  enseignantId: number | null = null;
+  creneauSelectionne: number | null = null;
+  dateMin: Date = new Date();
   showEnregistrerResultatDialog = signal(false);
   eleveId: number | null = null;
   enseignantResultatId: number | null = null;
   nouvelleNote: number = 0;
-  membres: Utilisateur[] = [];
-
-  filtreNiveau = signal<number | null>(null);
-  filtreEnseignantId = signal<number | null>(null);
 
   nouveauCreneau: any = {
     heureDebut: null,
@@ -137,7 +135,7 @@ export class CompetitionsComponent implements OnInit {
 
   chargerMembres() {
     this.utilisateurService.getMembres().subscribe({
-      next: (data) => (this.membres = data),
+      next: (data) => this.membres.set(data),
       error: (err) => this.notificationService.error(err),
     });
   }

@@ -4,11 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { BadgeService } from '../../services/badge.service';
 import { UtilisateurService } from '../../services/utilisateur.service';
 import { NotificationService } from '../../services/notification.service';
-import { CoursService } from '../../services/cours.service';
 import { Badge } from '../../model/badge.model';
 import { Presence } from '../../model/presence.model';
 import { Utilisateur } from '../../model/utilisateur.model';
-import { Cours } from '../../model/cours.model';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -52,24 +50,18 @@ import { AuthService } from '../../services/auth.service';
 })
 export class BadgesComponent implements OnInit {
   membres: Utilisateur[] = [];
-  cours: Cours[] = [];
   badges: Badge[] = [];
-  presences = signal<Presence[]>([]);
+  membreIdSelectionne: number | null = null;
 
+  presences = signal<Presence[]>([]);
   showAttribuerDialog = signal(false);
-  showBadgerDialog = signal(false);
   showPresencesDialog = signal(false);
   showDissocierDialog = signal(false);
   badgeADissocier = signal<Badge | null>(null);
 
-  membreIdSelectionne: number | null = null;
-  coursIdSelectionne: number | null = null;
-  membreBadgerIdSelectionne: number | null = null;
-
   constructor(
     private badgeService: BadgeService,
     private utilisateurService: UtilisateurService,
-    private coursService: CoursService,
     private confirmationService: ConfirmationService,
     private notificationService: NotificationService,
     public authService: AuthService,
@@ -77,7 +69,6 @@ export class BadgesComponent implements OnInit {
 
   ngOnInit() {
     this.chargerUtilisateurs();
-    this.chargerCours();
   }
 
   chargerUtilisateurs() {
@@ -86,13 +77,6 @@ export class BadgesComponent implements OnInit {
         this.membres = data;
         this.chargerBadges();
       },
-      error: (err) => this.notificationService.error(err),
-    });
-  }
-
-  chargerCours() {
-    this.coursService.getAll().subscribe({
-      next: (data) => (this.cours = data),
       error: (err) => this.notificationService.error(err),
     });
   }
@@ -129,29 +113,6 @@ export class BadgesComponent implements OnInit {
     });
   }
 
-  badger() {
-    if (!this.membreBadgerIdSelectionne || !this.coursIdSelectionne) {
-      this.notificationService.warn('Veuillez remplir tous les champs');
-      return;
-    }
-
-    // Récupérer le badge du membre
-    this.badgeService.getBadgeByMembre(this.membreBadgerIdSelectionne).subscribe({
-      next: (badge) => {
-        this.badgeService.badger(badge.numero!, this.coursIdSelectionne!).subscribe({
-          next: () => {
-            this.showBadgerDialog.set(false);
-            this.membreBadgerIdSelectionne = null;
-            this.coursIdSelectionne = null;
-            this.notificationService.success('Présence enregistrée avec succès');
-          },
-          error: (err) => this.notificationService.error(err),
-        });
-      },
-      error: () => this.notificationService.warn("Ce membre n'a pas de badge"),
-    });
-  }
-
   voirPresences(badge: Badge) {
     this.badgeService.getPresencesByEleve(badge.porteur!.identifiant!).subscribe({
       next: (data) => {
@@ -160,13 +121,6 @@ export class BadgesComponent implements OnInit {
       },
       error: (err) => this.notificationService.error(err),
     });
-  }
-
-  get coursOptions() {
-    return this.cours.map((c) => ({
-      label: `${c.titre} - ${c.creneau?.jourSemaine} ${c.creneau?.date}`,
-      value: c.identifiant,
-    }));
   }
 
   ouvrirDissociation(badge: Badge) {

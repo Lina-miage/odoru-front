@@ -33,45 +33,6 @@
     </div>
   </p-dialog>
 
-  <!-- Dialog badger -->
-  <p-dialog
-    header="Badger à un cours"
-    [visible]="showBadgerDialog()"
-    (visibleChange)="showBadgerDialog.set($event)"
-    [modal]="true"
-    [style]="{ width: '400px' }"
-  >
-    <div style="display: flex; flex-direction: column; gap: 1.5rem; padding: 1rem">
-      <p-floatlabel>
-        <p-select
-          id="membreBadger"
-          [options]="membres"
-          [(ngModel)]="membreBadgerIdSelectionne"
-          optionLabel="nomUtilisateur"
-          optionValue="identifiant"
-          style="width: 100%"
-        />
-        <label for="membreBadger">Membre</label>
-      </p-floatlabel>
-      <p-floatlabel>
-        <p-select
-          id="cours"
-          [options]="coursOptions"
-          [(ngModel)]="coursIdSelectionne"
-          optionLabel="label"
-          optionValue="value"
-          style="width: 100%"
-        />
-        <label for="cours">Cours</label>
-      </p-floatlabel>
-      <app-form-buttons
-        labelConfirmer="Badger"
-        (annuler)="showBadgerDialog.set(false)"
-        (confirmer)="badger()"
-      />
-    </div>
-  </p-dialog>
-
   <!-- Dialog presences -->
   <p-dialog
     header="Présences"
