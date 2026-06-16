@@ -1,37 +1,6 @@
 <div style="padding: 2rem">
   <p-toast />
 
-  <!-- Dialog élèves présents -->
-  <p-dialog
-    header="Élèves présents au cours"
-    [visible]="showElevesPresentsDialog()"
-    (visibleChange)="showElevesPresentsDialog.set($event)"
-    [modal]="true"
-    [style]="{ width: '600px' }"
-  >
-    <p-table [value]="elevesPresents()" [paginator]="true" [rows]="5">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>Nom</th>
-          <th>Prénom</th>
-          <th>Niveau</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-eleve>
-        <tr>
-          <td>{{ eleve.nom }}</td>
-          <td>{{ eleve.prenom }}</td>
-          <td>{{ eleve.niveauExpertise }}</td>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="emptymessage">
-        <tr>
-          <td colspan="3" style="text-align: center">Aucun élève présent</td>
-        </tr>
-      </ng-template>
-    </p-table>
-  </p-dialog>
-
   <!-- Dialog cours par élève -->
   <p-dialog
     header="Cours suivis"
@@ -120,39 +89,59 @@
 
   <!-- Section 1 : Élèves présents à un cours -->
   <p-card styleClass="margin-bottom: 2rem; display: block">
-    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem">
+    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem">
       <i class="pi pi-users" style="font-size: 1.5rem; color: #217b8a"></i>
       <h3 style="margin: 0">Qui était présent à un cours ?</h3>
     </div>
-    <div style="display: flex; gap: 1rem; align-items: center">
-      <p-floatlabel style="flex: 1">
-        <p-select
-          id="cours"
-          [options]="coursOptions"
-          [(ngModel)]="coursIdSelectionne"
-          optionLabel="label"
-          optionValue="value"
-          style="width: 100%"
-        />
-        <label for="cours">Sélectionner un cours</label>
-      </p-floatlabel>
-      <p-button
-        label="Voir les présences"
-        icon="pi pi-search"
-        [style]="{ 'background-color': '#217b8a', border: 'none' }"
-        (onClick)="voirElevesPresents()"
+    <p-floatlabel>
+      <p-select
+        id="cours"
+        [options]="coursOptions"
+        [ngModel]="coursIdSelectionne"
+        (ngModelChange)="onCoursChange($event)"
+        optionLabel="label"
+        optionValue="value"
+        [showClear]="true"
+        style="width: 100%"
       />
-    </div>
+      <label for="cours">Sélectionner un cours</label>
+    </p-floatlabel>
+    @if (coursIdSelectionne && elevesPresents().length > 0) {
+      <div style="margin-top: 1rem; font-weight: bold; color: #217b8a">
+        {{ elevesPresents().length }} élève(s) présent(s)
+      </div>
+      <p-table [value]="elevesPresents()" [paginator]="true" [rows]="5" style="margin-top: 0.5rem">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Niveau</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-eleve>
+          <tr>
+            <td>{{ eleve.nom }}</td>
+            <td>{{ eleve.prenom }}</td>
+            <td>{{ eleve.niveauExpertise }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    }
+    @if (coursIdSelectionne && elevesPresents().length === 0) {
+      <div style="margin-top: 1rem; color: #90949e; font-style: italic">
+        Aucun élève présent à ce cours
+      </div>
+    }
   </p-card>
 
   <!-- Section 2 : Historique par élève -->
   <p-card styleClass="margin-bottom: 2rem; display: block">
-    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem">
+    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem">
       <i class="pi pi-user" style="font-size: 1.5rem; color: #217b8a"></i>
       <h3 style="margin: 0">Historique d'un élève</h3>
     </div>
-    <div style="display: flex; gap: 1rem; margin-bottom: 1rem">
-      <p-floatlabel style="flex: 1">
+    <div style="display: flex; gap: 1rem; margin-bottom: 1rem; align-items: center">
+      <p-floatlabel style="flex: 2">
         <p-select
           id="membre"
           [options]="membres"
@@ -170,7 +159,7 @@
           [inline]="false"
           dateFormat="yy-mm-dd"
           [appendTo]="'body'"
-          placeholder="Date début (optionnel)"
+          placeholder="Date début"
           style="width: 100%"
         />
         <label for="debut">Date début</label>
@@ -182,7 +171,7 @@
           [inline]="false"
           dateFormat="yy-mm-dd"
           [appendTo]="'body'"
-          placeholder="Date fin (optionnel)"
+          placeholder="Date fin"
           style="width: 100%"
         />
         <label for="fin">Date fin</label>
@@ -192,13 +181,25 @@
       <p-button
         label="Cours suivis"
         icon="pi pi-book"
-        [style]="{ 'background-color': '#217b8a', border: 'none' }"
+        [disabled]="!membreIdSelectionne"
+        [pTooltip]="!membreIdSelectionne ? 'Sélectionnez d\'abord un élève' : ''"
+        tooltipPosition="top"
+        [style]="{
+          'background-color': !membreIdSelectionne ? '#90949E' : '#217b8a',
+          border: 'none',
+        }"
         (onClick)="voirCoursParEleve()"
       />
       <p-button
         label="Compétitions"
         icon="pi pi-trophy"
-        [style]="{ 'background-color': '#6495ED', border: 'none' }"
+        [disabled]="!membreIdSelectionne"
+        [pTooltip]="!membreIdSelectionne ? 'Sélectionnez d\'abord un élève' : ''"
+        tooltipPosition="top"
+        [style]="{
+          'background-color': !membreIdSelectionne ? '#90949E' : '#6495ED',
+          border: 'none',
+        }"
         (onClick)="voirCompetitionsParEleve()"
       />
     </div>
@@ -206,7 +207,7 @@
 
   <!-- Section 3 : Compétitions par niveau -->
   <p-card styleClass="display: block">
-    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem">
+    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem">
       <i class="pi pi-chart-bar" style="font-size: 1.5rem; color: #217b8a"></i>
       <h3 style="margin: 0">Compétitions par niveau</h3>
     </div>
@@ -215,19 +216,15 @@
         <p-select
           id="niveau"
           [options]="niveaux"
-          [(ngModel)]="niveauSelectionne"
+          [ngModel]="niveauSelectionne"
+          (ngModelChange)="onNiveauChange($event)"
           optionLabel="label"
           optionValue="value"
+          [showClear]="true"
           style="width: 100%"
         />
         <label for="niveau">Sélectionner un niveau</label>
       </p-floatlabel>
-      <p-button
-        label="Voir"
-        icon="pi pi-search"
-        [style]="{ 'background-color': '#217b8a', border: 'none' }"
-        (onClick)="voirCompetitionsParNiveau()"
-      />
       @if (niveauSelectionne) {
         <div
           style="

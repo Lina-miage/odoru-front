@@ -48,7 +48,7 @@
       <p-floatlabel>
         <p-select
           id="eleve"
-          [options]="membres"
+          [options]="membres()"
           [(ngModel)]="eleveId"
           optionLabel="nomUtilisateur"
           optionValue="identifiant"

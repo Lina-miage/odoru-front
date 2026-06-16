@@ -73,11 +73,11 @@ export class MembreComponent implements OnInit {
 
   chargerMembres() {
     this.utilisateurService.getAll().subscribe({
-      next: (data) => this.membres.set(data),
+      next: (data) =>
+        this.membres.set(data.filter((u) => u.role === 'MEMBRE' || u.role === 'ENSEIGNANT')),
       error: (err) => this.notificationService.error(err),
     });
   }
-
   confirmerDesignation(membre: Utilisateur) {
     this.confirmationService.confirm({
       message: `Êtes-vous sûr de vouloir désigner ${membre.prenom} ${membre.nom} comme enseignant ?`,
@@ -145,9 +145,9 @@ export class MembreComponent implements OnInit {
     if (!terme) return this.membres();
     return this.membres().filter(
       (m) =>
-        m.nom.toLowerCase().includes(terme) ||
-        m.prenom.toLowerCase().includes(terme) ||
-        m.nomUtilisateur.toLowerCase().includes(terme),
+        m.nom?.toLowerCase().includes(terme) ||
+        m.prenom?.toLowerCase().includes(terme) ||
+        m.nomUtilisateur?.toLowerCase().includes(terme),
     );
   });
 }
