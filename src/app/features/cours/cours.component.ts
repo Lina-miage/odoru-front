@@ -73,7 +73,6 @@ export class CoursComponent implements OnInit {
     titre: '',
     lieu: '',
     niveauCible: undefined,
-    duree: undefined,
     creneau: { id: undefined },
   };
 
@@ -95,6 +94,11 @@ export class CoursComponent implements OnInit {
     this.chargerEnseignants();
     if (this.authService.getRole() === 'MEMBRE') {
       this.verifierBadgeEtPresences();
+    }
+    if (this.authService.getRole() === 'ENSEIGNANT') {
+      const user = this.authService.utilisateurConnecte();
+      this.enseignantId = user?.identifiant ?? null;
+      this.nouveauCours.niveauCible = user?.niveauExpertise ?? undefined;
     }
   }
 
@@ -124,7 +128,7 @@ export class CoursComponent implements OnInit {
   }
 
   creerCreneau(nouveauCreneau: any) {
-    if (!nouveauCreneau.date || !nouveauCreneau.heureDebut) {
+    if (!nouveauCreneau.date || !nouveauCreneau.heureDebut || !nouveauCreneau.duree) {
       this.notificationService.warn('Veuillez remplir tous les champs');
       return;
     }
@@ -146,7 +150,6 @@ export class CoursComponent implements OnInit {
       !this.enseignantId ||
       !this.creneauSelectionne ||
       !this.nouveauCours.niveauCible ||
-      !this.nouveauCours.duree ||
       !this.nouveauCours.titre ||
       !this.nouveauCours.lieu
     ) {
@@ -164,7 +167,6 @@ export class CoursComponent implements OnInit {
           titre: '',
           lieu: '',
           niveauCible: undefined,
-          duree: undefined,
           creneau: { id: undefined },
         };
         this.enseignantId = null;
@@ -194,7 +196,7 @@ export class CoursComponent implements OnInit {
 
   get creneauxOptions() {
     return this.creneaux().map((c) => ({
-      label: `${c.jourSemaine} ${c.date} à ${c.heureDebut}`,
+      label: `${c.jourSemaine} ${c.date} à ${c.heureDebut} (${c.duree} min)`,
       value: c.id,
     }));
   }
@@ -311,7 +313,7 @@ export class CoursComponent implements OnInit {
     heureDebut.setHours(h, m, 0, 0);
 
     const heureFin = new Date(heureDebut);
-    heureFin.setMinutes(heureFin.getMinutes() + (cours.duree ?? 0));
+    heureFin.setMinutes(heureFin.getMinutes() + (cours.creneau?.duree ?? 0));
 
     if (maintenant < heureDebut) return 'pas_commence';
     if (maintenant > heureFin) return 'termine';

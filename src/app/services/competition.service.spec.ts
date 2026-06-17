@@ -15,8 +15,7 @@ describe('CompetitionService', () => {
     titre: 'Compétition de danse',
     lieu: 'Salle B',
     niveauCible: 1,
-    duree: 120,
-    creneau: { id: 1 },
+    creneau: { id: 1, duree: 60 },
   };
 
   const mockResultat: Resultat = {

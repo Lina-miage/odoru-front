@@ -15,8 +15,7 @@ describe('CoursService', () => {
     titre: 'Cours de danse',
     lieu: 'Salle A',
     niveauCible: 1,
-    duree: 60,
-    creneau: { id: 1 },
+    creneau: { id: 1, duree: 60 },
   };
 
   const mockCreneau: Creneau = {

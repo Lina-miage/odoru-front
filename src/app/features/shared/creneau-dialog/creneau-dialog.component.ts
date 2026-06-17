@@ -5,6 +5,7 @@ import { DatePicker } from 'primeng/datepicker';
 import { DialogModule } from 'primeng/dialog';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { FormButtonsComponent } from '../form-buttons/form-buttons.component';
 import { Creneau } from '../../../model/creneau.model';
 import { DateFormatPipe } from '../../../pipes/date-format.pipe';
@@ -19,6 +20,7 @@ import { DateFormatPipe } from '../../../pipes/date-format.pipe';
     DialogModule,
     TableModule,
     ButtonModule,
+    InputNumberModule,
     FormButtonsComponent,
     DateFormatPipe,
   ],
@@ -28,14 +30,15 @@ import { DateFormatPipe } from '../../../pipes/date-format.pipe';
       [visible]="showCreneauxDialog"
       (visibleChange)="fermerCreneauxDialog()"
       [modal]="true"
-      [style]="{ width: '600px' }"
+      [style]="{ width: '700px' }"
     >
       <p-table [value]="creneaux">
         <ng-template pTemplate="header">
           <tr>
             <th>Jour</th>
             <th>Date</th>
-            <th>Heure</th>
+            <th>Heure de début</th>
+            <th>Durée (min)</th>
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-creneau>
@@ -43,18 +46,12 @@ import { DateFormatPipe } from '../../../pipes/date-format.pipe';
             <td>{{ creneau.jourSemaine }}</td>
             <td>{{ creneau.date }}</td>
             <td>{{ creneau.heureDebut }}</td>
+            <td>{{ creneau.duree }}</td>
           </tr>
         </ng-template>
       </p-table>
       <ng-template pTemplate="footer">
-        <div
-          style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 1rem"
-        >
-          <p-button
-            label="Voir cours associés"
-            [style]="{ 'background-color': '#217b8a', border: 'none' }"
-            (onClick)="showCreneauxDialog = false; showTousCreneaux = true"
-          />
+        <div style="display: flex; justify-content: flex-end; width: 100%">
           <p-button
             label="Créer un créneau"
             [style]="{ 'background-color': '#217b8a', border: 'none' }"
@@ -62,33 +59,6 @@ import { DateFormatPipe } from '../../../pipes/date-format.pipe';
           />
         </div>
       </ng-template>
-    </p-dialog>
-
-    <p-dialog
-      header="Tous les créneaux"
-      [visible]="showTousCreneaux"
-      (visibleChange)="showTousCreneaux = $event; showCreneauxDialog = !$event"
-      [modal]="true"
-      [style]="{ width: '800px' }"
-    >
-      <p-table [value]="creneaux">
-        <ng-template pTemplate="header">
-          <tr>
-            <th>Jour</th>
-            <th>Date</th>
-            <th>Heure</th>
-            <th>Associé à</th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-creneau>
-          <tr>
-            <td>{{ creneau.jourSemaine }}</td>
-            <td>{{ creneau.date }}</td>
-            <td>{{ creneau.heureDebut }}</td>
-            <td>{{ getAssociation(creneau.id) }}</td>
-          </tr>
-        </ng-template>
-      </p-table>
     </p-dialog>
 
     <p-dialog
@@ -109,7 +79,7 @@ import { DateFormatPipe } from '../../../pipes/date-format.pipe';
             [appendTo]="'body'"
             style="width: 100%"
           />
-          <label for="date">Date</label>
+          <label for="date">Date <span style="color: red">*</span></label>
         </p-floatlabel>
         <p-floatlabel>
           <p-datepicker
@@ -119,7 +89,11 @@ import { DateFormatPipe } from '../../../pipes/date-format.pipe';
             [appendTo]="'body'"
             style="width: 100%"
           />
-          <label for="heureDebut">Heure de début</label>
+          <label for="heureDebut">Heure de début <span style="color: red">*</span></label>
+        </p-floatlabel>
+        <p-floatlabel>
+          <p-inputnumber id="duree" [(ngModel)]="creneau.duree" [min]="1" style="width: 100%" />
+          <label for="duree">Durée (minutes) <span style="color: red">*</span></label>
         </p-floatlabel>
         <app-form-buttons
           labelConfirmer="Créer"
@@ -142,7 +116,7 @@ export class CreneauDialogComponent implements OnChanges {
   showTousCreneaux = false;
   showCreerCreneau = false;
   dateMin: Date = new Date();
-  creneau: any = { date: null, heureDebut: null };
+  creneau: any = { date: null, heureDebut: null, duree: null };
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['visible']) {
@@ -162,7 +136,7 @@ export class CreneauDialogComponent implements OnChanges {
 
   onConfirmer() {
     this.confirmer.emit(this.creneau);
-    this.creneau = { date: null, heureDebut: null };
+    this.creneau = { date: null, heureDebut: null, duree: null };
     this.showCreerCreneau = false;
     this.showCreneauxDialog = true;
   }

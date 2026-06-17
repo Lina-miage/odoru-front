@@ -7,8 +7,7 @@ export interface Cours {
   titre: string;
   lieu: string;
   niveauCible?: number;
-  duree?: number;
-  creneau?: Creneau;
+  creneau: Creneau;
   enseignant?: Utilisateur;
   inscrits?: Inscription[];
 }
