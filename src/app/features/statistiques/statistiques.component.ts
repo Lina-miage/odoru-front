@@ -95,7 +95,17 @@ export class StatistiquesComponent implements OnInit {
 
   chargerCours() {
     this.coursService.getAll().subscribe({
-      next: (data) => (this.cours = data),
+      next: (data) => {
+        const aujourdhui = new Date();
+        aujourdhui.setHours(0, 0, 0, 0);
+        this.cours = data.filter((c) => {
+          if (!c.creneau?.date) return false;
+          const [year, month, day] = c.creneau.date.split('-').map(Number);
+          const dateCours = new Date(year, month - 1, day);
+          dateCours.setHours(0, 0, 0, 0);
+          return dateCours < aujourdhui;
+        });
+      },
       error: (err) => this.notificationService.error(err),
     });
   }

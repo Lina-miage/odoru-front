@@ -4,4 +4,5 @@ export interface Badge {
   identifiant?: number;
   numero?: string;
   porteur?: Utilisateur;
+  nombrePresences?: number;
 }

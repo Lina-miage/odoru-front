@@ -113,8 +113,9 @@
         <td style="display: flex; gap: 0.5rem">
           <app-action-button
             icon="pi pi-eye"
-            couleur="#6495ED"
-            tooltip="Voir les présences"
+            [couleur]="(badge.nombrePresences ?? 0) > 0 ? '#6495ED' : '#90949E'"
+            [tooltip]="(badge.nombrePresences ?? 0) > 0 ? 'Voir les présences' : 'Aucune présence'"
+            [disabled]="(badge.nombrePresences ?? 0) === 0"
             (clicked)="voirPresences(badge)"
           />
           <app-action-button
