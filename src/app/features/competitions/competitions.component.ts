@@ -70,22 +70,14 @@ export class CompetitionsComponent implements OnInit {
   enseignants: Utilisateur[] = [];
   enseignantId: number | null = null;
   creneauSelectionne: number | null = null;
-  dateMin: Date = new Date();
   showEnregistrerResultatDialog = signal(false);
   eleveId: number | null = null;
-  enseignantResultatId: number | null = null;
   nouvelleNote: number = 0;
-
-  nouveauCreneau: any = {
-    heureDebut: null,
-    date: null,
-  };
 
   nouvelleCompetition: Competition = {
     titre: '',
     lieu: '',
     niveauCible: undefined,
-    duree: undefined,
     creneau: { id: undefined },
   };
 
@@ -106,6 +98,11 @@ export class CompetitionsComponent implements OnInit {
     this.chargerCreneaux();
     this.chargerEnseignants();
     this.chargerMembres();
+    if (this.authService.getRole() === 'ENSEIGNANT') {
+      const user = this.authService.utilisateurConnecte();
+      this.enseignantId = user?.identifiant ?? null;
+      this.nouvelleCompetition.niveauCible = user?.niveauExpertise ?? undefined;
+    }
   }
 
   get aucunCreneau(): boolean {
@@ -141,7 +138,7 @@ export class CompetitionsComponent implements OnInit {
   }
 
   creerCreneau(nouveauCreneau: any) {
-    if (!nouveauCreneau.date || !nouveauCreneau.heureDebut) {
+    if (!nouveauCreneau.date || !nouveauCreneau.heureDebut || !nouveauCreneau.duree) {
       this.notificationService.warn('Veuillez remplir tous les champs');
       return;
     }
@@ -158,7 +155,13 @@ export class CompetitionsComponent implements OnInit {
   }
 
   creerCompetition() {
-    if (!this.enseignantId || !this.creneauSelectionne || !this.nouvelleCompetition.niveauCible) {
+    if (
+      !this.enseignantId ||
+      !this.creneauSelectionne ||
+      !this.nouvelleCompetition.niveauCible ||
+      !this.nouvelleCompetition.titre ||
+      !this.nouvelleCompetition.lieu
+    ) {
       this.notificationService.warn('Veuillez remplir tous les champs');
       return;
     }
@@ -253,7 +256,7 @@ export class CompetitionsComponent implements OnInit {
 
   get creneauxOptions() {
     return this.creneaux.map((c) => ({
-      label: `${c.jourSemaine} ${c.date} à ${c.heureDebut}`,
+      label: `${c.jourSemaine} ${c.date} à ${c.heureDebut} (${c.duree} min)`,
       value: c.id,
     }));
   }

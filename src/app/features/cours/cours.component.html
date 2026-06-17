@@ -74,47 +74,6 @@
         <div style="display: flex; gap: 1.5rem">
           <p-floatlabel style="flex: 1">
             <p-select
-              id="niveau"
-              [options]="niveaux"
-              [(ngModel)]="nouveauCours.niveauCible"
-              (ngModelChange)="onNiveauChange()"
-              optionLabel="label"
-              optionValue="value"
-              style="width: 100%"
-            />
-            <label for="niveau">Niveau cible <span style="color: rgb(148, 78, 78)">*</span></label>
-          </p-floatlabel>
-          <p-floatlabel style="flex: 1">
-            <p-inputnumber
-              id="duree"
-              [(ngModel)]="nouveauCours.duree"
-              [min]="1"
-              style="width: 100%"
-            />
-            <label for="duree"
-              >Durée (minutes) <span style="color: rgb(148, 78, 78)">*</span></label
-            >
-          </p-floatlabel>
-        </div>
-        <div style="display: flex; gap: 1.5rem">
-          <p-floatlabel style="flex: 1">
-            <p-select
-              id="enseignant"
-              [options]="enseignantsDisponibles"
-              [(ngModel)]="enseignantId"
-              optionLabel="prenom"
-              optionValue="identifiant"
-              [disabled]="!nouveauCours.niveauCible"
-              [pTooltip]="!nouveauCours.niveauCible ? 'Sélectionnez d\'abord un niveau' : ''"
-              tooltipPosition="top"
-              style="width: 100%"
-            />
-            <label for="enseignant"
-              >Enseignant <span style="color: rgb(148, 78, 78)">*</span></label
-            >
-          </p-floatlabel>
-          <p-floatlabel style="flex: 1">
-            <p-select
               id="creneau"
               [options]="creneauxOptions"
               [(ngModel)]="creneauSelectionne"
@@ -125,6 +84,40 @@
             <label for="creneau">Créneau <span style="color: rgb(148, 78, 78)">*</span></label>
           </p-floatlabel>
         </div>
+        @if (authService.getRole() === 'PRESIDENT') {
+          <div style="display: flex; gap: 1.5rem">
+            <p-floatlabel style="flex: 1">
+              <p-select
+                id="niveau"
+                [options]="niveaux"
+                [(ngModel)]="nouveauCours.niveauCible"
+                (ngModelChange)="onNiveauChange()"
+                optionLabel="label"
+                optionValue="value"
+                style="width: 100%"
+              />
+              <label for="niveau"
+                >Niveau cible <span style="color: rgb(148, 78, 78)">*</span></label
+              >
+            </p-floatlabel>
+            <p-floatlabel style="flex: 1">
+              <p-select
+                id="enseignant"
+                [options]="enseignantsDisponibles"
+                [(ngModel)]="enseignantId"
+                optionLabel="prenom"
+                optionValue="identifiant"
+                [disabled]="!nouveauCours.niveauCible"
+                [pTooltip]="!nouveauCours.niveauCible ? 'Sélectionnez d\'abord un niveau' : ''"
+                tooltipPosition="top"
+                style="width: 100%"
+              />
+              <label for="enseignant"
+                >Enseignant <span style="color: rgb(148, 78, 78)">*</span></label
+              >
+            </p-floatlabel>
+          </div>
+        }
         <app-form-buttons
           labelConfirmer="Créer"
           (annuler)="showForm.set(false)"
@@ -167,7 +160,6 @@
         <th>Titre</th>
         <th>Lieu</th>
         <th>Niveau</th>
-        <th>Durée</th>
         <th>Enseignant</th>
         <th>Créneau</th>
         <th>Inscrits</th>
@@ -185,14 +177,16 @@
         <td>{{ unCours.titre }}</td>
         <td>{{ unCours.lieu }}</td>
         <td>{{ unCours.niveauCible }}</td>
-        <td>{{ unCours.duree }} min</td>
         <td>{{ unCours.enseignant?.prenom }} {{ unCours.enseignant?.nom }}</td>
         <td>
           {{ unCours.creneau?.jourSemaine }} {{ unCours.creneau?.date | dateFormat }}
           <strong>
             {{ unCours.creneau?.heureDebut?.slice(0, 5) }} -
-            {{ creneauService.calculerHeureFin(unCours.creneau?.heureDebut!, unCours.duree!) }}
+            {{
+              creneauService.calculerHeureFin(unCours.creneau?.heureDebut!, unCours.creneau?.duree!)
+            }}
           </strong>
+          ({{ unCours.creneau?.duree }} min)
         </td>
         <td>{{ unCours.inscrits?.length ?? 0 }}</td>
         <td style="display: flex; gap: 0.5rem; align-items: center">

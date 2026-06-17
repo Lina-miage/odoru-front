@@ -3,4 +3,5 @@ export interface Creneau {
   jourSemaine?: string;
   heureDebut?: string;
   date?: string;
+  duree?: number;
 }

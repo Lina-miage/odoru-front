@@ -111,7 +111,7 @@
               [(ngModel)]="nouvelleCompetition.titre"
               style="width: 100%"
             />
-            <label for="titre">Titre<span style="color: rgb(148, 78, 78)">*</span></label>
+            <label for="titre">Titre <span style="color: rgb(148, 78, 78)">*</span></label>
           </p-floatlabel>
           <p-floatlabel style="flex: 1">
             <input
@@ -120,44 +120,7 @@
               [(ngModel)]="nouvelleCompetition.lieu"
               style="width: 100%"
             />
-            <label for="lieu">Lieu<span style="color: rgb(148, 78, 78)">*</span></label>
-          </p-floatlabel>
-        </div>
-        <div style="display: flex; gap: 1.5rem">
-          <p-floatlabel style="flex: 1">
-            <p-select
-              id="niveau"
-              [options]="niveaux"
-              [(ngModel)]="nouvelleCompetition.niveauCible"
-              (ngModelChange)="onNiveauChange()"
-              optionLabel="label"
-              optionValue="value"
-              style="width: 100%"
-            />
-            <label for="niveau">Niveau cible<span style="color: rgb(148, 78, 78)">*</span></label>
-          </p-floatlabel>
-          <p-floatlabel style="flex: 1">
-            <p-inputnumber
-              id="duree"
-              [(ngModel)]="nouvelleCompetition.duree"
-              [min]="1"
-              style="width: 100%"
-            />
-            <label for="duree">Durée (minutes)<span style="color: rgb(148, 78, 78)">*</span></label>
-          </p-floatlabel>
-          <p-floatlabel style="flex: 1">
-            <p-select
-              id="enseignant"
-              [options]="enseignantsDisponibles"
-              [(ngModel)]="enseignantId"
-              optionLabel="prenom"
-              optionValue="identifiant"
-              [disabled]="!nouvelleCompetition.niveauCible"
-              [pTooltip]="!nouvelleCompetition.niveauCible ? 'Sélectionnez d\'abord un niveau' : ''"
-              tooltipPosition="top"
-              style="width: 100%"
-            />
-            <label for="enseignant">Enseignant<span style="color: rgb(148, 78, 78)">*</span></label>
+            <label for="lieu">Lieu <span style="color: rgb(148, 78, 78)">*</span></label>
           </p-floatlabel>
         </div>
         <div style="display: flex; gap: 1.5rem">
@@ -170,9 +133,45 @@
               optionValue="value"
               style="width: 100%"
             />
-            <label for="creneau">Créneau<span style="color: rgb(148, 78, 78)">*</span></label>
+            <label for="creneau">Créneau <span style="color: rgb(148, 78, 78)">*</span></label>
           </p-floatlabel>
         </div>
+        @if (authService.getRole() === 'PRESIDENT') {
+          <div style="display: flex; gap: 1.5rem">
+            <p-floatlabel style="flex: 1">
+              <p-select
+                id="niveau"
+                [options]="niveaux"
+                [(ngModel)]="nouvelleCompetition.niveauCible"
+                (ngModelChange)="onNiveauChange()"
+                optionLabel="label"
+                optionValue="value"
+                style="width: 100%"
+              />
+              <label for="niveau"
+                >Niveau cible <span style="color: rgb(148, 78, 78)">*</span></label
+              >
+            </p-floatlabel>
+            <p-floatlabel style="flex: 1">
+              <p-select
+                id="enseignant"
+                [options]="enseignantsDisponibles"
+                [(ngModel)]="enseignantId"
+                optionLabel="prenom"
+                optionValue="identifiant"
+                [disabled]="!nouvelleCompetition.niveauCible"
+                [pTooltip]="
+                  !nouvelleCompetition.niveauCible ? 'Sélectionnez d\'abord un niveau' : ''
+                "
+                tooltipPosition="top"
+                style="width: 100%"
+              />
+              <label for="enseignant"
+                >Enseignant <span style="color: rgb(148, 78, 78)">*</span></label
+              >
+            </p-floatlabel>
+          </div>
+        }
         <app-form-buttons
           labelConfirmer="Créer"
           (annuler)="showForm.set(false)"
@@ -230,10 +229,11 @@
               {{
                 creneauService.calculerHeureFin(
                   competition.creneau?.heureDebut!,
-                  competition.duree!
+                  competition.creneau?.duree!
                 )
               }}
             </strong>
+            ({{ competition.creneau?.duree }} min)
           </td>
           <td style="display: flex; gap: 0.5rem">
             <app-action-button

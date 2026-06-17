@@ -6,7 +6,6 @@ export interface Competition {
   titre: string;
   lieu: string;
   niveauCible?: number;
-  duree?: number;
-  creneau?: Creneau;
+  creneau: Creneau;
   enseignant?: Utilisateur;
 }

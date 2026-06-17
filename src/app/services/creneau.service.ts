@@ -19,6 +19,7 @@ export class CreneauService {
       jourSemaine: this.jours[date.getDay()],
       date: `${year}-${month}-${day}`,
       heureDebut: `${String(heure.getHours()).padStart(2, '0')}:${String(heure.getMinutes()).padStart(2, '0')}:00`,
+      duree: nouveauCreneau.duree,
     };
   }
 
