@@ -161,7 +161,7 @@
     </app-page-header>
   </div>
 
-  <p-table [value]="coursFiltres()" [paginator]="true" [rows]="10" dataKey="identifiant">
+  <p-table [value]="coursAvecStatut()" [paginator]="true" [rows]="10" dataKey="identifiant">
     <ng-template pTemplate="header">
       <tr>
         <th>Titre</th>
@@ -199,12 +199,26 @@
           @if (authService.getRole() === 'MEMBRE') {
             @if (aBadgePourCours(unCours.identifiant!)) {
               <span style="color: #4caf50; font-weight: bold">✓ Présent</span>
-            } @else {
+            } @else if (unCours.statut === 'en_cours') {
               <app-action-button
                 icon="pi pi-check"
                 couleur="#217b8a"
                 tooltip="Badger à ce cours"
                 (clicked)="badgerCours(unCours)"
+              />
+            } @else if (unCours.statut === 'pas_commence') {
+              <app-action-button
+                icon="pi pi-check"
+                couleur="#90949E"
+                tooltip="Le cours n'a pas encore commencé"
+                [disabled]="true"
+              />
+            } @else {
+              <app-action-button
+                icon="pi pi-check"
+                couleur="#8F4A3F"
+                tooltip="Le cours est déjà terminé"
+                [disabled]="true"
               />
             }
           } @else {

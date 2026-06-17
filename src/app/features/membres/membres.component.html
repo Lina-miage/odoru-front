@@ -23,7 +23,13 @@
         [appendTo]="'body'"
         style="width: 100%"
       />
-      <p-button label="Confirmer" (onClick)="confirmerNiveau()" />
+      <div style="display: flex; justify-content: flex-end">
+        <p-button
+          label="Confirmer"
+          [style]="{ 'background-color': '#217b8a', border: 'none' }"
+          (onClick)="confirmerNiveau()"
+        />
+      </div>
     </div>
   </p-dialog>
   <div style="margin-top: 4rem">

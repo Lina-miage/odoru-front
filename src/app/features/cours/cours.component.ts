@@ -67,8 +67,6 @@ export class CoursComponent implements OnInit {
   showInscritsDialog = signal(false);
   filtreNiveau = signal<number | null>(null);
   filtreEnseignantId = signal<number | null>(null);
-  aBadge = signal(false);
-  aDejaAllBadge = signal(false);
   presencesMembre = signal<any[]>([]);
 
   nouveauCours: Cours = {
@@ -204,7 +202,7 @@ export class CoursComponent implements OnInit {
   get enseignantsDisponibles() {
     if (!this.nouveauCours.niveauCible) return this.enseignants;
     return this.enseignants.filter(
-      (e) => e.profilEnseignant && e.profilEnseignant.niveauApte >= this.nouveauCours.niveauCible!,
+      (e) => e.profilEnseignant && e.profilEnseignant.niveauApte == this.nouveauCours.niveauCible!,
     );
   }
 
@@ -236,34 +234,15 @@ export class CoursComponent implements OnInit {
     this.showInscritsDialog.set(true);
   }
 
-  get coursOptions() {
-    return this.cours().map((c) => ({
-      label: `${c.titre} - ${c.creneau?.jourSemaine} ${c.creneau?.date}`,
-      value: c.identifiant,
-    }));
-  }
-
   verifierBadgeEtPresences() {
     const membreId = this.authService.utilisateurConnecte()?.identifiant;
     if (!membreId) return;
 
-    this.badgeService.getBadgeByMembre(membreId).subscribe({
-      next: (badge) => {
-        this.aBadge.set(true);
-        this.badgeService.getPresencesByEleve(membreId).subscribe({
-          next: (presences) => {
-            this.presencesMembre.set(presences);
-            const coursInscrits = this.cours().filter((c) =>
-              c.inscrits?.some((i) => i.eleve?.identifiant === membreId),
-            );
-            const aDejaBadge = coursInscrits.every((c) =>
-              presences.some((p) => p.cours?.identifiant === c.identifiant),
-            );
-            this.aDejaAllBadge.set(coursInscrits.length === 0 || aDejaBadge);
-          },
-        });
+    this.badgeService.getPresencesByEleve(membreId).subscribe({
+      next: (presences) => {
+        this.presencesMembre.set(presences);
       },
-      error: () => this.aBadge.set(false),
+      error: () => {},
     });
   }
 
@@ -305,4 +284,37 @@ export class CoursComponent implements OnInit {
       titre: this.getCoursParCreneau(c.id!),
     }));
   });
+
+  coursAvecStatut = computed(() => {
+    return this.coursFiltres().map((c) => ({
+      ...c,
+      statut: this.calculerStatut(c),
+    }));
+  });
+
+  private calculerStatut(cours: Cours): 'en_cours' | 'pas_commence' | 'termine' {
+    if (!cours.creneau?.date || !cours.creneau?.heureDebut) return 'pas_commence';
+
+    const maintenant = new Date();
+    const [year, month, day] = cours.creneau.date.split('-').map(Number);
+    const dateCours = new Date(year, month - 1, day);
+
+    const aujourdhui = new Date();
+    aujourdhui.setHours(0, 0, 0, 0);
+    dateCours.setHours(0, 0, 0, 0);
+
+    if (dateCours > aujourdhui) return 'pas_commence';
+    if (dateCours < aujourdhui) return 'termine';
+
+    const [h, m] = cours.creneau.heureDebut.split(':').map(Number);
+    const heureDebut = new Date();
+    heureDebut.setHours(h, m, 0, 0);
+
+    const heureFin = new Date(heureDebut);
+    heureFin.setMinutes(heureFin.getMinutes() + (cours.duree ?? 0));
+
+    if (maintenant < heureDebut) return 'pas_commence';
+    if (maintenant > heureFin) return 'termine';
+    return 'en_cours';
+  }
 }

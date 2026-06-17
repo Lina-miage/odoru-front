@@ -263,7 +263,7 @@ export class CompetitionsComponent implements OnInit {
     return this.enseignants.filter(
       (e) =>
         e.profilEnseignant &&
-        e.profilEnseignant.niveauApte >= this.nouvelleCompetition.niveauCible!,
+        e.profilEnseignant.niveauApte == this.nouvelleCompetition.niveauCible!,
     );
   }
 

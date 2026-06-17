@@ -82,11 +82,21 @@ export class BadgesComponent implements OnInit {
   }
 
   chargerBadges() {
+    this.badges = [];
     this.membres.forEach((m) => {
       this.badgeService.getBadgeByMembre(m.identifiant!).subscribe({
         next: (badge) => {
           if (!this.badges.find((b) => b.identifiant === badge.identifiant)) {
-            this.badges.push(badge);
+            this.badgeService.getPresencesByEleve(m.identifiant!).subscribe({
+              next: (presences) => {
+                badge.nombrePresences = presences.length;
+                this.badges.push(badge);
+              },
+              error: () => {
+                badge.nombrePresences = 0;
+                this.badges.push(badge);
+              },
+            });
           }
         },
         error: () => {},
